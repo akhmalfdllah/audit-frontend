@@ -4,12 +4,14 @@ import { useEffect, useState } from "react"
 import axios from "@/lib/api"
 import Layout from "@/components/Layout"
 
+
 type Log = {
     id: string
-    actorName?: string
+    actorName: string
     action: string
     targetEntity: string
     targetId: string
+    metadata: Record<string, any>
     createdAt: string
 }
 
@@ -31,9 +33,10 @@ export default function AuditLogPage() {
     const [logs, setLogs] = useState<Log[]>([])
     const [selectedTab, setSelectedTab] = useState<"semua" | "by-action">("semua")
     const [selectedAction, setSelectedAction] = useState<string>("")
+    const [page, setPage] = useState(1)
 
     const fetchAllLogs = async () => {
-        const res = await axios.get("/audit-logs")
+        const res = await axios.get(`/audit-logs?page=${page}`)
         setLogs(res.data)
     }
 
@@ -43,12 +46,21 @@ export default function AuditLogPage() {
     }
 
     useEffect(() => {
+        setLogs([])
+        setPage(1)
+    }, [selectedTab])
+
+    useEffect(() => {
         if (selectedTab === "semua") {
             fetchAllLogs()
-        } else if (selectedAction) {
+        }
+    }, [selectedTab, page])
+
+    useEffect(() => {
+        if (selectedTab === "by-action" && selectedAction) {
             fetchLogsByAction(selectedAction)
         }
-    }, [selectedTab, selectedAction])
+    }, [selectedAction, selectedTab])
 
     return (
         <Layout>
@@ -77,7 +89,6 @@ export default function AuditLogPage() {
                     Berdasarkan Action
                 </button>
             </div>
-
             {selectedTab === "by-action" && (
                 <div className="mb-6">
                     <label className="font-medium mr-2">Pilih Action:</label>
@@ -111,15 +122,49 @@ export default function AuditLogPage() {
                             melakukan{" "}
                             <span className="font-medium">{log.action}</span>
                         </p>
-                        <p>
-                            Target: {log.targetEntity} - {log.targetId}
-                        </p>
+
+                        <p>Target: {log.targetEntity} - {log.targetId}</p>
+
+                        {/* Tambahan metadata */}
+                        {log.metadata?.title && (
+                            <p>Title: <span className="font-medium">{log.metadata.title}</span></p>
+                        )}
+                        {log.metadata?.amount && (
+                            <p>Jumlah: <span className="font-medium">Rp {log.metadata.amount.toLocaleString()}</span></p>
+                        )}
+                        {log.metadata?.decisionBy && (
+                            <p>Disetujui/Ditolak oleh: <span className="font-medium">{log.metadata.decisionBy}</span></p>
+                        )}
+
                         <p className="text-xs text-gray-500">
                             Waktu: {new Date(log.createdAt).toLocaleString()}
                         </p>
+
                     </div>
                 ))}
+
+
+
             </div>
+            {selectedTab === "semua" && (
+                <div className="flex justify-center mt-6 gap-2">
+                    <button
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                    >
+                        Sebelumnya
+                    </button>
+                    <span className="px-4 py-1 text-sm font-medium">Halaman {page}</span>
+                    <button
+                        onClick={() => setPage((prev) => prev + 1)}
+                        className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    >
+                        Selanjutnya
+                    </button>
+                </div>
+            )}
+
         </Layout>
     )
 }

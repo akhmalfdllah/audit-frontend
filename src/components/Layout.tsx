@@ -15,11 +15,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <header className="bg-[#635d40] text-white px-6 py-3 shadow-md">
                     <div className="flex justify-between items-center">
                         <h1 className="text-lg font-semibold hidden md:block">Audit Transaksi Keuangan</h1>
-                        <input
-                            type="text"
-                            placeholder="Search User"
-                            className="w-full max-w-sm px-4 py-2 rounded-lg text-sm focus:outline-none text-black"
-                        />
                     </div>
                 </header>
 

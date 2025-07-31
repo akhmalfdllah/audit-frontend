@@ -29,13 +29,6 @@ export default function Sidebar() {
                     </NavItem>
                 </nav>
             </div>
-
-            <Link
-                href="/register"
-                className="mt-6 block bg-purple-600 text-white py-2 rounded-lg text-center text-sm hover:bg-purple-700"
-            >
-                + Register User
-            </Link>
         </aside>
     )
 }

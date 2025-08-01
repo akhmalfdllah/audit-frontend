@@ -1,11 +1,10 @@
 import axios from "axios"
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL, // ⬅️ DI SINI!
+  baseURL: process.env.REACT_APP_API_BASE_URL,
   withCredentials: true, // ini penting agar cookie refresh token terkirim
 })
 
-// Flag untuk mencegah refresh berulang
 let isRefreshing = false
 let failedQueue: any[] = []
 
@@ -25,7 +24,6 @@ api.interceptors.response.use(
   async err => {
     const originalRequest = err.config
 
-    // Deteksi jika token expired dan belum mencoba refresh
     if (err.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
@@ -40,8 +38,7 @@ api.interceptors.response.use(
       isRefreshing = true
 
       try {
-        // Kirim request refresh
-        const res = await axios.post(
+        await axios.post(
           "http://localhost:3000/auth/refresh",
           {},
           { withCredentials: true }

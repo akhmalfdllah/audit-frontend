@@ -1,9 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import axios from "@/lib/api"
 import Layout from "@/components/Layout"
 
+type LogMetadata = {
+    title?: string;
+    amount?: number;
+    decisionBy?: string;
+};
 
 type Log = {
     id: string
@@ -11,7 +16,7 @@ type Log = {
     action: string
     targetEntity: string
     targetId: string
-    metadata: Record<string, any>
+    metadata: LogMetadata
     createdAt: string
 }
 
@@ -35,11 +40,6 @@ export default function AuditLogPage() {
     const [selectedAction, setSelectedAction] = useState<string>("")
     const [page, setPage] = useState(1)
 
-    const fetchAllLogs = async () => {
-        const res = await axios.get(`/audit-logs?page=${page}`)
-        setLogs(res.data)
-    }
-
     const fetchLogsByAction = async (action: string) => {
         const res = await axios.get(`/audit-logs/by-action/${action}`)
         setLogs(res.data)
@@ -50,11 +50,16 @@ export default function AuditLogPage() {
         setPage(1)
     }, [selectedTab])
 
+    const fetchAllLogs = useCallback(async () => {
+        const res = await axios.get(`/audit-logs?page=${page}`);
+        setLogs(res.data);
+    }, [page]);
+
     useEffect(() => {
         if (selectedTab === "semua") {
-            fetchAllLogs()
+            fetchAllLogs();
         }
-    }, [selectedTab, page])
+    }, [selectedTab, page, fetchAllLogs]);
 
     useEffect(() => {
         if (selectedTab === "by-action" && selectedAction) {

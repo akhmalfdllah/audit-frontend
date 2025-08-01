@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import Layout from "@/components/Layout"
 
@@ -47,11 +47,8 @@ export default function UsersPage() {
     const [filterText, setFilterText] = useState("")
     const router = useRouter()
 
-    useEffect(() => {
-        fetchUsers()
-    }, [router])
 
-    async function fetchUsers(query = "") {
+    const fetchUsers = useCallback(async (query = "") => {
         try {
             const res = await fetch(`http://localhost:3000/user/all${query}`, {
                 credentials: "include",
@@ -65,13 +62,16 @@ export default function UsersPage() {
             }
             const data = await res.json()
             setUsers(data)
-            //setLoading(false)
         } catch (err: any) {
             setError(err.message)
             console.error(err)
             router.push("/login")
         }
-    }
+    }, [router]) // ✅ tambahkan router sebagai dependency (karena dipakai dalam function)
+    useEffect(() => {
+        fetchUsers()
+    }, [fetchUsers])
+
     useEffect(() => {
         fetch("http://localhost:3000/all", {
             credentials: "include", // penting untuk kirim cookie token

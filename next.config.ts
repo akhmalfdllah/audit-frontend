@@ -1,10 +1,8 @@
-import type { NextConfig } from "next";
-
-// next.config.js
-const NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   eslint: {
-    ignoreDuringBuilds: true, // ✅ abaikan error eslint saat build di Vercel
+    ignoreDuringBuilds: true, // ✅ Abaikan error eslint saat build (khusus deploy)
   },
 };
 
-module.exports = NextConfig;
+module.exports = nextConfig;

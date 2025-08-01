@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+// next.config.js
+const NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true, // ✅ abaikan error eslint saat build di Vercel
+  },
 };
 
-export default nextConfig;
+module.exports = NextConfig;

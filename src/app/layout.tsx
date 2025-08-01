@@ -14,11 +14,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="id">
       <body>
-        {typeof window === "undefined" ? (
-          children
-        ) : window.location.pathname === "/login" ? (
-          <>{children}</>
-        ) : (
           <div className="flex min-h-screen bg-[#f8f5f0] text-[#635d40]">
             <aside className="w-64 h-screen bg-[#f08c00] text-white p-4 hidden md:block">
               <h1 className="text-xl font-bold mb-6">Audit System</h1>
@@ -32,7 +27,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
             <main className="flex-1 p-6">{children}</main>
           </div>
-        )}
       </body>
     </html>
   )

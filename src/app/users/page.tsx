@@ -62,9 +62,12 @@ export default function UsersPage() {
             }
             const data = await res.json()
             setUsers(data)
-        } catch (err: any) {
-            setError(err.message)
-            console.error(err)
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message)
+            } else {
+                setError("Terjadi kesalahan tidak diketahui")
+            }
             router.push("/login")
         }
     }, [router]) // ✅ tambahkan router sebagai dependency (karena dipakai dalam function)

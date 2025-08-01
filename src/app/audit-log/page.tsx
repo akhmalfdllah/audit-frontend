@@ -4,19 +4,13 @@ import { useEffect, useState, useCallback } from "react"
 import axios from "@/lib/api"
 import Layout from "@/components/Layout"
 
-type LogMetadata = {
-    title?: string;
-    amount?: number;
-    decisionBy?: string;
-};
-
 type Log = {
     id: string
     actorName: string
     action: string
     targetEntity: string
     targetId: string
-    metadata: LogMetadata
+    metadata: Record<string, string | number | boolean>
     createdAt: string
 }
 

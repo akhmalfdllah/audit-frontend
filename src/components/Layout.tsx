@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* Area kanan: header + konten */}
             <div className="flex flex-col flex-1 bg-gray-50">
                 {/* Header */}
-                <header className="bg-[#635d40] text-white px-6 py-3 shadow-md">
+                <header className="bg-[#f08c00] text-white px-6 py-3 shadow-md">
                     <div className="flex justify-between items-center">
                         <h1 className="text-lg font-semibold hidden md:block">Audit Transaksi Keuangan</h1>
                     </div>
@@ -22,8 +22,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <main className="flex-grow px-6 py-4">{children}</main>
 
                 {/* Footer */}
-                <footer className="bg-[#635d40] text-white text-center py-3 text-sm">
-                    &copy; {new Date().getFullYear()} Sistem Audit Keuangan
+                <footer className="#635d40 text-center">
+                    &copy; {new Date().getFullYear()} Filotra
                 </footer>
             </div>
         </div>

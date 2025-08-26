@@ -5,7 +5,6 @@ import axios from "@/lib/api"
 import { FileText, CheckCircle, XCircle, UserCheck } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts"
 import { motion } from "framer-motion"
-import Layout from "@/components/Layout"
 
 export default function DashboardPage() {
     const [summary, setSummary] = useState({
@@ -28,7 +27,6 @@ export default function DashboardPage() {
     ]
 
     return (
-        <Layout>
             <div>
                 <h1 className="text-2xl font-bold mb-6 text-[#635d40]">Dashboard</h1>
 
@@ -116,6 +114,5 @@ export default function DashboardPage() {
                     </ResponsiveContainer>
                 </div>
             </div>
-        </Layout>
     )
 }

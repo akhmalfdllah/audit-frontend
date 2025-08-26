@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from "react"
 import axios from "@/lib/api"
-import Layout from "@/components/Layout"
 
 type Log = {
     id: string
@@ -62,7 +61,7 @@ export default function AuditLogPage() {
     }, [selectedAction, selectedTab])
 
     return (
-        <Layout>
+        <div>
             <h1 className="text-2xl font-bold mb-4 text-[#635d40]">Audit Log</h1>
 
             <div className="flex gap-4 mb-4">
@@ -72,7 +71,7 @@ export default function AuditLogPage() {
                         setSelectedAction("")
                     }}
                     className={`px-4 py-2 rounded-md font-medium ${selectedTab === "semua"
-                        ? "bg-[#f08c00] text-white"
+                        ? "bg-[#635d40] text-white"
                         : "bg-gray-100"
                         }`}
                 >
@@ -81,7 +80,7 @@ export default function AuditLogPage() {
                 <button
                     onClick={() => setSelectedTab("by-action")}
                     className={`px-4 py-2 rounded-md font-medium ${selectedTab === "by-action"
-                        ? "bg-[#f08c00] text-white"
+                        ? "bg-[#635d40] text-white"
                         : "bg-gray-100"
                         }`}
                 >
@@ -106,45 +105,45 @@ export default function AuditLogPage() {
                 </div>
             )}
 
-            <div className="space-y-3">
-                {logs.length === 0 && (
-                    <p className="text-sm text-gray-500">Tidak ada log yang tersedia.</p>
-                )}
-
-                {logs.map((log) => (
-                    <div
-                        key={log.id}
-                        className="p-4 bg-white border rounded-md shadow-sm text-sm text-[#635d40]"
-                    >
-                        <p>
-                            <span className="font-semibold">{log.actorName || "Sistem"}</span>{" "}
-                            melakukan{" "}
-                            <span className="font-medium">{log.action}</span>
-                        </p>
-
-                        <p>Target: {log.targetEntity} - {log.targetId}</p>
-
-                        {/* Tambahan metadata */}
-                        {log.metadata?.title && (
-                            <p>Title: <span className="font-medium">{log.metadata.title}</span></p>
+            <div className="overflow-x-auto">
+                <table className="min-w-full border border-gray-200 rounded-md">
+                    <thead className="bg-[#f08c00] text-white">
+                        <tr>
+                            <th className="px-4 py-2 text-left">Aktor</th>
+                            <th className="px-4 py-2 text-left">Aksi</th>
+                            <th className="px-4 py-2 text-left">Target</th>
+                            <th className="px-4 py-2 text-left">Metadata</th>
+                            <th className="px-4 py-2 text-left">Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {logs.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-4 py-3 text-center text-gray-500">
+                                    Tidak ada log yang tersedia.
+                                </td>
+                            </tr>
+                        ) : (
+                            logs.map((log) => (
+                                <tr key={log.id} className="border-t hover:bg-gray-50">
+                                    <td className="px-4 py-2">{log.actorName || "Sistem"}</td>
+                                    <td className="px-4 py-2">{log.action}</td>
+                                    <td className="px-4 py-2">{log.targetEntity} - {log.targetId}</td>
+                                    <td className="px-4 py-2">
+                                        {log.metadata?.title && <div>Title: {log.metadata.title}</div>}
+                                        {log.metadata?.amount && <div>Jumlah: Rp {Number(log.metadata.amount).toLocaleString()}</div>}
+                                        {log.metadata?.decisionBy && <div>Oleh: {log.metadata.decisionBy}</div>}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-600">
+                                        {new Date(log.createdAt).toLocaleString()}
+                                    </td>
+                                </tr>
+                            ))
                         )}
-                        {log.metadata?.amount && (
-                            <p>Jumlah: <span className="font-medium">Rp {log.metadata.amount.toLocaleString()}</span></p>
-                        )}
-                        {log.metadata?.decisionBy && (
-                            <p>Disetujui/Ditolak oleh: <span className="font-medium">{log.metadata.decisionBy}</span></p>
-                        )}
-
-                        <p className="text-xs text-gray-500">
-                            Waktu: {new Date(log.createdAt).toLocaleString()}
-                        </p>
-
-                    </div>
-                ))}
-
-
-
+                    </tbody>
+                </table>
             </div>
+
             {selectedTab === "semua" && (
                 <div className="flex justify-center mt-6 gap-2">
                     <button
@@ -163,7 +162,6 @@ export default function AuditLogPage() {
                     </button>
                 </div>
             )}
-
-        </Layout>
+        </div>
     )
 }

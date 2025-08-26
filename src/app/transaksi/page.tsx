@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react"
 import axios from "@/lib/api"
 import { Button } from "@/components/ui/button"
-import Layout from "@/components/Layout"
 
 type Transaction = {
     id: string
@@ -37,7 +36,6 @@ export default function TransaksiPage() {
     }, [])
 
     return (
-        <Layout>
             <div>
                 <h1 className="text-2xl font-bold mb-4">Daftar Transaksi</h1>
 
@@ -82,6 +80,5 @@ export default function TransaksiPage() {
                     ))}
                 </div>
             </div>
-        </Layout>
     )
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import Layout from "@/components/Layout"
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Group {
     id: string
@@ -21,17 +21,19 @@ type User = {
     username: string
 }
 
+function handleRequired(e: React.FormEvent<HTMLInputElement>) {
+    const target = e.target as HTMLInputElement;
+    if (e.type === "invalid") {
+        target.setCustomValidity("Form ini wajib diisi");
+    } else {
+        target.setCustomValidity("");
+    }
+}
+
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([])
     const [groups, setGroups] = useState<{ id: string; name: string }[]>([])
     const [error, setError] = useState("")
-    //const [loading, setLoading] = useState(true)
-    const [groupForm, setGroupForm] = useState({
-        name: "",
-        description: "",
-        type: "Internal",
-    })
-    const [showGroupForm, setShowGroupForm] = useState(false)
     const [showForm, setShowForm] = useState(false)
     const [formData, setFormData] = useState({
         username: "",
@@ -39,7 +41,7 @@ export default function UsersPage() {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "Auditor",
+        role: "",
         status: "Active",
         groupId: "",
     })
@@ -98,6 +100,14 @@ export default function UsersPage() {
             });
     }, []);
 
+    const [animate, setAnimate] = useState(false);
+    useEffect(() => {
+        if (showForm) {
+            setTimeout(() => setAnimate(true), 10);
+        } else {
+            setAnimate(false);
+        }
+    }, [showForm]);
 
 
     function handleSearch(e: React.FormEvent) {
@@ -148,7 +158,7 @@ export default function UsersPage() {
                 email: "",
                 password: "",
                 confirmPassword: "",
-                role: "Auditor",
+                role: "",
                 status: "Active",
                 groupId: "",
             })
@@ -184,39 +194,18 @@ export default function UsersPage() {
             email: user.email ?? "",
             password: "",
             confirmPassword: "",
-            role: user.role ?? "Auditor",
+            role: user.role ?? "",
             status: user.status ?? "Active",
             groupId: user.group?.id ?? "",
         })
         setEditId(user.id)
         setShowForm(true)
     }
-    async function handleAddGroup(e: React.FormEvent) {
-        e.preventDefault()
-        const res = await fetch("http://localhost:3000/groups", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify(groupForm),
-        })
-        if (res.ok) {
-            alert("Group berhasil ditambahkan")
-            setShowGroupForm(false)
-            setGroupForm({ name: "", description: "", type: "Internal" })
-            // Refresh daftar group
-            fetch("http://localhost:3000/all", { credentials: "include" })
-                .then(res => res.json())
-                .then(data => setGroups(data))
-        } else {
-            const err = await res.json().catch(() => ({}))
-            alert("Gagal menambahkan group: " + (err.message || res.status))
-        }
-    }
     //if (loading) return <div>Loading...</div>
     if (error) return <div className="text-red-600">Error: {error}</div>
 
     return (
-        <Layout>
+        <div>
             <h1 className="text-2xl font-bold mb-4">Kelola User</h1>
 
             <form onSubmit={handleSearch} className="mb-4">
@@ -227,7 +216,11 @@ export default function UsersPage() {
                     value={filterText}
                     onChange={(e) => setFilterText(e.target.value)}
                 />
-                <button type="submit" className="bg-[#f08c00] text-white px-4 py-2 rounded">
+                <button type="submit" className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded transform hover:scale-105 transition-all duration-500 ease-in-out"
+                    style={{
+                        willChange: "transform",
+                        textShadow: "0 0 1px rgba(0, 0, 0, 0.1)"
+                    }}>
                     Cari
                 </button>
             </form>
@@ -246,7 +239,7 @@ export default function UsersPage() {
                             email: "",
                             password: "",
                             confirmPassword: "",
-                            role: "Auditor",
+                            role: "",
                             status: "Active",
                             groupId: "",
                         })
@@ -254,143 +247,164 @@ export default function UsersPage() {
                         setEditId(null)
                     }
                 }}
-                className="bg-[#635d40] text-white px-4 py-2 rounded ml-2"
+                className="bg-[#635d40] text-white px-4 py-2 rounded mb-4 transform hover:scale-105 transition-all duration-150 ease-in-out"
+                style={{
+                    willChange: "transform",
+                    textShadow: "0 0 1px rgba(0, 0, 0, 0.1)"
+                }}
             >
                 {showForm ? "Tutup Form User" : "Tambah User"}
             </button>
 
-            <button
-                onClick={() => setShowGroupForm(!showGroupForm)}
-                className="bg-[#635d40] text-white px-4 py-2 rounded ml-2"
-            >
-                {showGroupForm ? "Tutup Form Grup" : "Tambah Group"}
-            </button>
-            {showGroupForm && (
-                <form
-                    onSubmit={handleAddGroup}
-                    className="bg-white p-4 mt-4 rounded shadow border border-gray-300"
-                >
-                    <h2 className="text-lg font-semibold mb-2">Form Tambah Group</h2>
-                    <div className="mb-2">
-                        <label>Nama Group</label>
-                        <input
-                            type="text"
-                            value={groupForm.name}
-                            onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })}
-                            className="w-full border p-2"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Deskripsi</label>
-                        <textarea
-                            value={groupForm.description}
-                            onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })}
-                            className="w-full border p-2"
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Tipe Group</label>
-                        <select
-                            value={groupForm.type}
-                            onChange={(e) => setGroupForm({ ...groupForm, type: e.target.value })}
-                            className="w-full border p-2"
+            <AnimatePresence>
+                {showForm && (
+                    <motion.div
+                        className="fixed inset-0 backdrop-blur-[2px] flex justify-center items-center z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <motion.div
+                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
                         >
-                            <option value="Internal">Internal</option>
-                            <option value="External">External</option>
-                            <option value="System">System</option>
-                        </select>
-                    </div>
-                    <button type="submit" className="bg-[#635d40] text-white px-4 py-2 rounded">
-                        Simpan Group
-                    </button>
-                </form>
-            )}
-            {showForm && (
-                <form onSubmit={handleSubmit} className="bg-white p-4 rounded shadow mb-6">
-                    <div className="mb-2">
-                        <label>Username</label>
-                        <input
-                            type="text"
-                            value={formData.username}
-                            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                            className="w-full border p-2"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Nama Lengkap</label>
-                        <input
-                            type="text"
-                            value={formData.fullName}
-                            onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                            className="w-full border p-2"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full border p-2"
-                            required
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            value={formData.password}
-                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="w-full border p-2"
-                            required={!editId}
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Konfirmasi Password</label>
-                        <input
-                            type="password"
-                            value={formData.confirmPassword}
-                            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                            className="w-full border p-2"
-                            required={!editId}
-                        />
-                    </div>
-                    <div className="mb-2">
-                        <label>Role</label>
-                        <select
-                            value={formData.role}
-                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                            className="w-full border p-2"
-                        >
-                            <option value="Admin">Admin</option>
-                            <option value="Auditor">Auditor</option>
-                            <option value="ERP">ERP</option>
-                        </select>
-                    </div>
-                    <div className="mb-2">
-                        <label>Group</label>
-                        <select
-                            value={formData.groupId}
-                            onChange={(e) => setFormData({ ...formData, groupId: e.target.value })}
-                            className="w-full border p-2"
-                            required
-                        >
-                            <option value="">Pilih Grup</option>
-                            {groups.map((group) => (
-                                <option key={group.id} value={group.id}>
-                                    {group.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <button type="submit" className="bg-[#f08c00] text-white px-4 py-2 rounded">
-                        {editId ? "Update" : "Simpan"}
-                    </button>
-                </form>
-            )}
+                            <button
+                                onClick={() => setShowForm(false)}
+                                className="absolute top-2 right-5 text-gray-500 transform hover:scale-125 transition-all duration-150"
+                            >
+                                ✕
+                            </button>
+
+                            <form onSubmit={handleSubmit}>
+                                <h2 className="text-xl font-bold mb-4">
+                                    {editId ? "Edit User" : "Tambah User"}
+                                </h2>
+
+                                {/* --- Field Username --- */}
+                                <div className="mb-2">
+                                    <label>Username</label>
+                                    <input
+                                        type="text"
+                                        value={formData.username}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, username: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required
+                                        onInvalid={handleRequired}
+                                        onInput={handleRequired}
+                                    />
+                                </div>
+
+                                {/* --- Field Nama Lengkap --- */}
+                                <div className="mb-2">
+                                    <label>Nama Lengkap</label>
+                                    <input
+                                        type="text"
+                                        value={formData.fullName}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, fullName: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required
+                                        onInvalid={handleRequired}
+                                        onInput={handleRequired}
+                                    />
+                                </div>
+
+                                {/* --- Field Email --- */}
+                                <div className="mb-2">
+                                    <label>Email</label>
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, email: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required
+                                    />
+                                </div>
+
+                                {/* --- Password dan Konfirmasi Password --- */}
+                                <div className="mb-2">
+                                    <label>Password</label>
+                                    <input
+                                        type="password"
+                                        value={formData.password}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, password: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required={!editId}
+                                    />
+                                </div>
+                                <div className="mb-2">
+                                    <label>Konfirmasi Password</label>
+                                    <input
+                                        type="password"
+                                        value={formData.confirmPassword}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, confirmPassword: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required={!editId}
+                                    />
+                                </div>
+
+                                {/* --- Role --- */}
+                                <div className="mb-2">
+                                    <label>Role</label>
+                                    <select
+                                        value={formData.role}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, role: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required
+                                    >
+                                        <option value="">Pilih Role</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="Auditor">Auditor</option>
+                                        <option value="ERP">ERP</option>
+                                    </select>
+                                </div>
+
+                                {/* --- Group --- */}
+                                <div className="mb-2">
+                                    <label>Group</label>
+                                    <select
+                                        value={formData.groupId}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, groupId: e.target.value })
+                                        }
+                                        className="w-full border p-2"
+                                        required
+                                    >
+                                        <option value="">Pilih Grup</option>
+                                        {groups.map((group) => (
+                                            <option key={group.id} value={group.id}>
+                                                {group.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded transition-transform transform hover:scale-102 w-full"
+                                >
+                                    {editId ? "Update" : "Simpan"}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <table className="w-full border text-sm text-[#635d40]">
                 <thead className="bg-[#f08c00] text-white">
@@ -420,13 +434,13 @@ export default function UsersPage() {
                             <td className="p-2 space-x-2">
                                 <button
                                     onClick={() => startEdit(user)}
-                                    className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                                    className="bg-yellow-500 hover:bg-[#d87a00] text-white px-2 py-1 rounded text-xs transition-transform transform hover:scale-105"
                                 >
                                     Edit
                                 </button>
                                 <button
                                     onClick={() => handleDelete(user.id)}
-                                    className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                                    className="bg-red-600 hover:bg-[#9e111d] text-white px-2 py-1 rounded text-xs transition-transform transform hover:scale-105"
                                 >
                                     Hapus
                                 </button>
@@ -435,6 +449,6 @@ export default function UsersPage() {
                     ))}
                 </tbody>
             </table>
-        </Layout>
+        </div>
     )
 }

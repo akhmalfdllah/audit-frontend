@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Layout from "@/components/Layout"
 
 type Group = {
     id: string
@@ -92,7 +91,7 @@ export default function DepartmentsPage() {
     }
 
     return (
-        <Layout>
+        <div>
             <h1 className="text-2xl font-bold mb-4">Manajemen Departemen / Grup</h1>
 
             <button
@@ -189,6 +188,6 @@ export default function DepartmentsPage() {
                     ))}
                 </tbody>
             </table>
-        </Layout>
+        </div>
     )
 }

@@ -155,7 +155,7 @@ export default function DepartmentsPage() {
                 </form>
             )}
 
-            <table className="w-full border text-sm text-[#635d40]">
+            <table className="w-full border-t text-sm text-[#635d40]">
                 <thead className="bg-[#f08c00] text-white">
                     <tr>
                         <th className="p-2 text-left">Nama</th>

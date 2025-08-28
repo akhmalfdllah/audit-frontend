@@ -35,6 +35,12 @@ export default function UsersPage() {
     const [groups, setGroups] = useState<{ id: string; name: string }[]>([])
     const [error, setError] = useState("")
     const [showForm, setShowForm] = useState(false)
+    const [notification, setNotification] = useState<string | null>(null);
+    const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; id: string | null }>({
+        show: false,
+        id: null,
+    });
+
     const [formData, setFormData] = useState({
         username: "",
         fullName: "",
@@ -100,14 +106,14 @@ export default function UsersPage() {
             });
     }, []);
 
-    const [animate, setAnimate] = useState(false);
-    useEffect(() => {
-        if (showForm) {
-            setTimeout(() => setAnimate(true), 10);
-        } else {
-            setAnimate(false);
-        }
-    }, [showForm]);
+    // const [animate, setAnimate] = useState(false);
+    // useEffect(() => {
+    //     if (showForm) {
+    //         setTimeout(() => setAnimate(true), 10);
+    //     } else {
+    //         setAnimate(false);
+    //     }
+    // }, [showForm]);
 
 
     function handleSearch(e: React.FormEvent) {
@@ -119,39 +125,41 @@ export default function UsersPage() {
     }
 
     async function handleSubmit(e: React.FormEvent) {
-        e.preventDefault()
+        e.preventDefault();
         const payload = editId
             ? Object.fromEntries(
                 Object.entries(formData).filter(([key, val]) => {
-                    if (val === "") return false
-                    if (key === "confirmPassword" && !formData.password) return false
-                    return true
+                    if (val === "") return false;
+                    if (key === "confirmPassword" && !formData.password) return false;
+                    return true;
                 })
             )
-            : formData
-        console.log("Payload dikirim:", JSON.stringify(payload, null, 2))
-        const url = editId ? `http://localhost:3000/user/${editId}` : "http://localhost:3000/user"
-        const method = editId ? "PATCH" : "POST"
+            : formData;
+
+        const url = editId ? `http://localhost:3000/user/${editId}` : "http://localhost:3000/user";
+        const method = editId ? "PATCH" : "POST";
         const res = await fetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
             credentials: "include",
             body: JSON.stringify(payload),
+        });
 
-        })
         if (res.ok) {
             if (editId) {
-                // 🔁 Fetch ulang user lengkap setelah update
                 const updatedUserRes = await fetch(`http://localhost:3000/user/${editId}`, {
                     credentials: "include",
-                })
-                const updatedUser = await updatedUserRes.json()
-                setUsers((prev) => prev.map((u) => (u.id === editId ? updatedUser : u)))
+                });
+                const updatedUser = await updatedUserRes.json();
+                setUsers((prev) => prev.map((u) => (u.id === editId ? updatedUser : u)));
+                setNotification("User berhasil diperbarui!");
             } else {
-                const created = await res.json()
-                setUsers((prev) => [...prev, created])
+                const created = await res.json();
+                setUsers((prev) => [...prev, created]);
+                setNotification("User berhasil ditambahkan!");
             }
-            setShowForm(false)
+
+            setShowForm(false);
             setFormData({
                 username: "",
                 fullName: "",
@@ -161,30 +169,32 @@ export default function UsersPage() {
                 role: "",
                 status: "Active",
                 groupId: "",
-            })
-            setEditId(null)
+            });
+            setEditId(null);
 
-            if (!res.ok) {
-                const errorBody = await res.json().catch(() => ({}))
-                console.error("Gagal tambah/update:", res.status, errorBody)
-                alert("Gagal menyimpan user")
-            }
+            setTimeout(() => setNotification(null), 3000); // popup hilang setelah 3 detik
         } else {
-            alert("Gagal menyimpan user")
+            alert("Gagal menyimpan user");
         }
     }
 
-    async function handleDelete(id: string) {
-        if (!confirm("Yakin ingin menghapus user ini?")) return
-        const res = await fetch(`http://localhost:3000/user/${id}`, {
+    function handleDelete(id: string) {
+        setConfirmDelete({ show: true, id });
+    }
+    async function confirmDeleteUser() {
+        if (!confirmDelete.id) return;
+        const res = await fetch(`http://localhost:3000/user/${confirmDelete.id}`, {
             method: "DELETE",
             credentials: "include",
-        })
+        });
         if (res.ok) {
-            setUsers((prev) => prev.filter((u) => u.id !== id))
+            setUsers((prev) => prev.filter((u) => u.id !== confirmDelete.id));
+            setNotification("User berhasil dihapus!");
+            setTimeout(() => setNotification(null), 3000);
         } else {
-            alert("Gagal menghapus user")
+            alert("Gagal menghapus user");
         }
+        setConfirmDelete({ show: false, id: null });
     }
 
     function startEdit(user: User) {
@@ -207,6 +217,53 @@ export default function UsersPage() {
     return (
         <div>
             <h1 className="text-2xl font-bold mb-4">Kelola User</h1>
+            <AnimatePresence>
+                {notification && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50"
+                    >
+                        {notification}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {confirmDelete.show && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                        >
+                            <h3 className="text-lg font-bold mb-4">Yakin ingin menghapus user ini?</h3>
+                            <div className="flex justify-center gap-4">
+                                <button
+                                    onClick={confirmDeleteUser}
+                                    className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                                >
+                                    Hapus
+                                </button>
+                                <button
+                                    onClick={() => setConfirmDelete({ show: false, id: null })}
+                                    className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             <form onSubmit={handleSearch} className="mb-4">
                 <input
@@ -405,19 +462,19 @@ export default function UsersPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-
+            <table className="w-full border text-sm text-[#635d40]"></table>
             <table className="w-full border text-sm text-[#635d40]">
                 <thead className="bg-[#f08c00] text-white">
                     <tr>
-                        <th className="p-2 text-left">Nama</th>
-                        <th className="p-2 text-left">Username</th>
-                        <th className="p-2 text-left">Email</th>
-                        <th className="p-2 text-left">Role</th>
-                        <th className="p-2 text-left">Status</th>
-                        <th className="p-2 text-left">Group</th>
-                        <th className="p-2 text-left">Type</th>
-                        <th className="p-2 text-left">Description</th>
-                        <th className="p-2 text-left">Aksi</th>
+                        <th className="p-2">Nama</th>
+                        <th className="p-2">Username</th>
+                        <th className="p-2">Email</th>
+                        <th className="p-2">Role</th>
+                        <th className="p-2">Status</th>
+                        <th className="p-2">Group</th>
+                        <th className="p-2">Type</th>
+                        <th className="p-2">Description</th>
+                        <th className="p-2">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -440,8 +497,7 @@ export default function UsersPage() {
                                 </button>
                                 <button
                                     onClick={() => handleDelete(user.id)}
-                                    className="bg-red-600 hover:bg-[#9e111d] text-white px-2 py-1 rounded text-xs transition-transform transform hover:scale-105"
-                                >
+                                    className="bg-red-600 hover:bg-[#9e111d] text-white px-2 py-1 rounded text-xs transition-transform transform hover:scale-105">
                                     Hapus
                                 </button>
                             </td>

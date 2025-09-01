@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion";
 
 type Group = {
     id: string
@@ -11,7 +12,7 @@ type Group = {
 
 export default function DepartmentsPage() {
     const [groups, setGroups] = useState<Group[]>([])
-    const [form, setForm] = useState({ name: "", description: "", type: "Internal" })
+    const [form, setForm] = useState({ name: "", description: "", type: "" })
     const [editId, setEditId] = useState<string | null>(null)
     const [showForm, setShowForm] = useState(false)
 
@@ -96,90 +97,124 @@ export default function DepartmentsPage() {
 
             <button
                 onClick={() => {
-                    if (showForm) resetForm()
-                    else setShowForm(true)
+                    if (showForm) resetForm();
+                    else setShowForm(true);
                 }}
-                className="bg-[#635d40] text-white px-4 py-2 rounded mb-4"
+                className="px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 
+                transform bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md mb-4"
+                style={{
+                    willChange: "transform",
+                    textShadow: "0 0 1px rgba(0, 0, 0, 0.1)"
+                }}
             >
-                {showForm ? "Tutup Form" : "Tambah Group"}
+                {showForm ? "Tutup Form Group" : "Tambah Group"}
             </button>
 
-            {showForm && (
-                <form
-                    onSubmit={handleSubmit}
-                    className="bg-white p-4 mb-6 rounded shadow border border-gray-300"
-                >
-                    <h2 className="text-lg font-semibold mb-2">
-                        {editId ? "Edit Group" : "Tambah Group Baru"}
-                    </h2>
-
-                    <div className="mb-2">
-                        <label>Nama Group</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={form.name}
-                            onChange={handleFormChange}
-                            className="w-full border p-2"
-                            required
-                        />
-                    </div>
-
-                    <div className="mb-2">
-                        <label>Deskripsi</label>
-                        <textarea
-                            name="description"
-                            value={form.description}
-                            onChange={handleFormChange}
-                            className="w-full border p-2"
-                        />
-                    </div>
-
-                    <div className="mb-2">
-                        <label>Tipe Group</label>
-                        <select
-                            name="type"
-                            value={form.type}
-                            onChange={handleFormChange}
-                            className="w-full border p-2"
+            <AnimatePresence>
+                {showForm && (
+                    <motion.div
+                        className="fixed inset-0 backdrop-blur-[2px] flex justify-center items-center z-50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <motion.div
+                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
                         >
-                            <option value="Internal">Internal</option>
-                            <option value="External">External</option>
-                            <option value="System">System</option>
-                        </select>
-                    </div>
+                            <button
+                                onClick={() => setShowForm(false)}
+                                className="absolute top-2 right-5 text-gray-500 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-all duration-150"
+                            >
+                                ✕
+                            </button>
 
-                    <button type="submit" className="bg-[#f08c00] text-white px-4 py-2 rounded">
-                        Simpan
-                    </button>
-                </form>
-            )}
+                            <form onSubmit={handleSubmit}>
+                                <h2 className="text-xl font-bold mb-4">
+                                    {editId ? "Edit Group" : "Tambah Group Baru"}
+                                </h2>
 
-            <table className="w-full border-t text-sm text-[#635d40]">
-                <thead className="bg-[#f08c00] text-white">
+                                {/* --- Field Nama Group --- */}
+                                <div className="mb-2">
+                                    <label>Nama Group</label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={form.name}
+                                        onChange={handleFormChange}
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                        required
+                                    />
+                                </div>
+
+                                {/* --- Deskripsi --- */}
+                                <div className="mb-2">
+                                    <label>Deskripsi</label>
+                                    <textarea
+                                        name="description"
+                                        value={form.description}
+                                        onChange={handleFormChange}
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                    />
+                                </div>
+
+                                {/* --- Tipe Group --- */}
+                                <div className="mb-2">
+                                    <label>Tipe Group</label>
+                                    <select
+                                        name="type"
+                                        value={form.type}
+                                        onChange={handleFormChange}
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                    >
+                                        <option value="" disabled>Pilih Tipe</option>
+                                        <option value="Internal">Internal</option>
+                                        <option value="External">External</option>
+                                        <option value="System">System</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded transition-transform transform hover:scale-102 w-full"
+                                >
+                                    {editId ? "Update" : "Simpan"}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <table className="w-full border-gray-300 text-sm text-left rounded-lg">
+                <thead className="bg-[#f2f2f2]">
                     <tr>
-                        <th className="p-2 text-left">Nama</th>
-                        <th className="p-2 text-left">Deskripsi</th>
-                        <th className="p-2 text-left">Tipe</th>
-                        <th className="p-2 text-left">Aksi</th>
+                        <th className="px-4 py-2">Nama</th>
+                        <th className="px-4 py-2">Wilayah</th>
+                        <th className="px-4 py-2">Tipe</th>
+                        <th className="px-4 py-2 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {groups.map(group => (
-                        <tr key={group.id} className="border-t">
-                            <td className="p-2">{group.name}</td>
-                            <td className="p-2">{group.description}</td>
-                            <td className="p-2">{group.type}</td>
-                            <td className="p-2 space-x-2">
+                        <tr key={group.id} className="border-t hover:bg-gray-50">
+                            <td className="px-4 py-2">{group.name}</td>
+                            <td className="px-4 py-2">{group.description}</td>
+                            <td className="px-4 py-2">{group.type}</td>
+                            <td className="px-4 py-2 space-x-2 text-center">
                                 <button
                                     onClick={() => startEdit(group)}
-                                    className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                                    className="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-1 rounded"
                                 >
                                     Edit
                                 </button>
                                 <button
                                     onClick={() => handleDelete(group.id)}
-                                    className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                                    className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
                                 >
                                     Hapus
                                 </button>

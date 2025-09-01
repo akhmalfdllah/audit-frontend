@@ -67,26 +67,29 @@ export default function AuditLogPage() {
             <div className="flex gap-4 mb-4">
                 <button
                     onClick={() => {
-                        setSelectedTab("semua")
-                        setSelectedAction("")
+                        setSelectedTab("semua");
+                        setSelectedAction("");
                     }}
-                    className={`px-4 py-2 rounded-md font-medium ${selectedTab === "semua"
-                        ? "bg-[#635d40] text-white"
-                        : "bg-gray-100"
+                    className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
+      ${selectedTab === "semua"
+                            ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
+                            : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
                         }`}
                 >
                     Semua Log
                 </button>
                 <button
                     onClick={() => setSelectedTab("by-action")}
-                    className={`px-4 py-2 rounded-md font-medium ${selectedTab === "by-action"
-                        ? "bg-[#635d40] text-white"
-                        : "bg-gray-100"
+                    className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
+      ${selectedTab === "by-action"
+                            ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
+                            : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
                         }`}
                 >
                     Berdasarkan Action
                 </button>
             </div>
+
             {selectedTab === "by-action" && (
                 <div className="mb-6">
                     <label className="font-medium mr-2">Pilih Action:</label>
@@ -106,8 +109,8 @@ export default function AuditLogPage() {
             )}
 
             <div className="overflow-x-auto">
-                <table className="min-w-full border border-gray-200 rounded-md">
-                    <thead className="bg-[#f08c00] text-white">
+                <table className="w-full border-gray-300 text-sm text-left rounded-lg">
+                    <thead className="bg-[#f2f2f2]">
                         <tr>
                             <th className="px-4 py-2 text-left">Aktor</th>
                             <th className="px-4 py-2 text-left">Aksi</th>

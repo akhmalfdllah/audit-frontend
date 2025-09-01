@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion";
+import { Search } from "lucide-react";
 
 interface Group {
     id: string
@@ -105,16 +106,6 @@ export default function UsersPage() {
                 console.error("Fetch group error:", err.message);
             });
     }, []);
-
-    // const [animate, setAnimate] = useState(false);
-    // useEffect(() => {
-    //     if (showForm) {
-    //         setTimeout(() => setAnimate(true), 10);
-    //     } else {
-    //         setAnimate(false);
-    //     }
-    // }, [showForm]);
-
 
     function handleSearch(e: React.FormEvent) {
         e.preventDefault()
@@ -265,22 +256,22 @@ export default function UsersPage() {
                 )}
             </AnimatePresence>
 
-            <form onSubmit={handleSearch} className="mb-4">
+            <form onSubmit={handleSearch} className="mb-4 relative w-64">
                 <input
                     type="text"
-                    placeholder="Cari nama / email / group"
-                    className="border p-2 mr-2"
+                    placeholder="Cari user..."
+                    className="border p-2 pl-10 w-full focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                     value={filterText}
                     onChange={(e) => setFilterText(e.target.value)}
                 />
-                <button type="submit" className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded transform hover:scale-105 transition-all duration-500 ease-in-out"
-                    style={{
-                        willChange: "transform",
-                        textShadow: "0 0 1px rgba(0, 0, 0, 0.1)"
-                    }}>
-                    Cari
+                <button
+                    type="submit"
+                    className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-500 hover:text-[#f08c00]"
+                >
+                    <Search className="w-5 h-5" />
                 </button>
             </form>
+
 
             <button
                 onClick={() => {
@@ -304,7 +295,8 @@ export default function UsersPage() {
                         setEditId(null)
                     }
                 }}
-                className="bg-[#635d40] text-white px-4 py-2 rounded mb-4 transform hover:scale-105 transition-all duration-150 ease-in-out"
+                className="px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 
+                transform bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md mb-4"
                 style={{
                     willChange: "transform",
                     textShadow: "0 0 1px rgba(0, 0, 0, 0.1)"
@@ -331,7 +323,7 @@ export default function UsersPage() {
                         >
                             <button
                                 onClick={() => setShowForm(false)}
-                                className="absolute top-2 right-5 text-gray-500 transform hover:scale-125 transition-all duration-150"
+                                className="absolute top-2 right-5 text-gray-500 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-all duration-150"
                             >
                                 ✕
                             </button>
@@ -350,7 +342,7 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, username: e.target.value })
                                         }
-                                        className="w-full border p-2"
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                                         required
                                         onInvalid={handleRequired}
                                         onInput={handleRequired}
@@ -366,7 +358,7 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, fullName: e.target.value })
                                         }
-                                        className="w-full border p-2"
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                                         required
                                         onInvalid={handleRequired}
                                         onInput={handleRequired}
@@ -382,7 +374,7 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, email: e.target.value })
                                         }
-                                        className="w-full border p-2"
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                                         required
                                     />
                                 </div>
@@ -396,7 +388,7 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, password: e.target.value })
                                         }
-                                        className="w-full border p-2"
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                                         required={!editId}
                                     />
                                 </div>
@@ -408,7 +400,7 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, confirmPassword: e.target.value })
                                         }
-                                        className="w-full border p-2"
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                                         required={!editId}
                                     />
                                 </div>
@@ -421,7 +413,7 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, role: e.target.value })
                                         }
-                                        className="w-full border p-2"
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
                                         required
                                     >
                                         <option value="">Pilih Role</option>
@@ -439,10 +431,9 @@ export default function UsersPage() {
                                         onChange={(e) =>
                                             setFormData({ ...formData, groupId: e.target.value })
                                         }
-                                        className="w-full border p-2"
-                                        required
+                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm" required
                                     >
-                                        <option value="">Pilih Grup</option>
+                                        <option value="">Pilih Group</option>
                                         {groups.map((group) => (
                                             <option key={group.id} value={group.id}>
                                                 {group.name}
@@ -462,42 +453,43 @@ export default function UsersPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
-            <table className="w-full border text-sm text-[#635d40]"></table>
-            <table className="w-full border text-sm text-[#635d40]">
-                <thead className="bg-[#f08c00] text-white">
+
+            <table className="w-full border-gray-300 text-sm text-left rounded-lg">
+                <thead className="bg-[#f2f2f2]">
                     <tr>
-                        <th className="p-2">Nama</th>
-                        <th className="p-2">Username</th>
-                        <th className="p-2">Email</th>
-                        <th className="p-2">Role</th>
-                        <th className="p-2">Status</th>
-                        <th className="p-2">Group</th>
-                        <th className="p-2">Type</th>
-                        <th className="p-2">Description</th>
-                        <th className="p-2">Aksi</th>
+                        <th className="px-4 py-2">Nama</th>
+                        <th className="px-4 py-2">Username</th>
+                        <th className="px-4 py-2">Email</th>
+                        <th className="px-4 py-2">Role</th>
+                        <th className="px-4 py-2">Status</th>
+                        <th className="px-4 py-2">Group</th>
+                        <th className="px-4 py-2">Type</th>
+                        <th className="px-4 py-2">Description</th>
+                        <th className="px-4 py-2 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {users.map((user) => (
-                        <tr key={user.id} className="border-t">
-                            <td className="p-2">{user.fullName}</td>
-                            <td className="p-2">{user.username}</td>
-                            <td className="p-2">{user.email}</td>
-                            <td className="p-2 capitalize">{user.role}</td>
-                            <td className="p-2">{user.status}</td>
-                            <td className="p-2">{user.group?.name}</td>
-                            <td className="p-2">{user.group?.type}</td>
-                            <td className="p-2">{user.group?.description}</td>
-                            <td className="p-2 space-x-2">
+                        <tr key={user.id} className="border-t hover:bg-gray-50">
+                            <td className="px-4 py-2">{user.fullName}</td>
+                            <td className="px-4 py-2 capitalize">{user.username}</td>
+                            <td className="px-4 py-2">{user.email}</td>
+                            <td className="px-4 py-2 capitalize">{user.role}</td>
+                            <td className="px-4 py-2">{user.status}</td>
+                            <td className="px-4 py-2">{user.group?.name}</td>
+                            <td className="px-4 py-2">{user.group?.type}</td>
+                            <td className="px-4 py-2">{user.group?.description}</td>
+                            <td className="px-4 py-2 space-x-2 text-center">
                                 <button
                                     onClick={() => startEdit(user)}
-                                    className="bg-yellow-500 hover:bg-[#d87a00] text-white px-2 py-1 rounded text-xs transition-transform transform hover:scale-105"
+                                    className="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-1 rounded"
                                 >
                                     Edit
                                 </button>
                                 <button
                                     onClick={() => handleDelete(user.id)}
-                                    className="bg-red-600 hover:bg-[#9e111d] text-white px-2 py-1 rounded text-xs transition-transform transform hover:scale-105">
+                                    className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
+                                >
                                     Hapus
                                 </button>
                             </td>

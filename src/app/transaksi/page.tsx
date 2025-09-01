@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import axios from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { AnimatePresence, motion } from "framer-motion";
@@ -25,21 +25,16 @@ type Log = {
     createdAt: string;
 };
 
-const actions = [
-    "CREATE_TRANSACTION",
-    "APPROVE_TRANSACTION",
-    "REJECT_TRANSACTION",
-];
+const actions = ["CREATE_TRANSACTION", "APPROVE_TRANSACTION", "REJECT_TRANSACTION"];
+
+type SortKey = "title" | "category" | "amount" | "createdAt";
 
 export default function TransaksiPage() {
     const [data, setData] = useState<Transaction[]>([]);
-    const [sortConfig, setSortConfig] = useState<{ key: keyof Transaction; direction: "asc" | "desc" }>({
-    key: "title",
-    direction: "asc",
-});
     const [logs, setLogs] = useState<Log[]>([]);
     const [selectedTab, setSelectedTab] = useState<"pending" | "by-action">("pending");
     const [selectedAction, setSelectedAction] = useState<string>("");
+    const [notification, setNotification] = useState<string | null>(null);
     const [confirmAction, setConfirmAction] = useState<{
         show: boolean;
         id: string | null;
@@ -50,7 +45,14 @@ export default function TransaksiPage() {
         decision: null,
     });
 
-    // Fetch transaksi pending
+    const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: "asc" | "desc" } | null>(null);
+
+    // Filter tanggal (untuk tab by-action)
+    const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+        start: "",
+        end: "",
+    });
+
     const fetchPendingTransactions = async () => {
         const res = await axios.get("/transactions/all");
         const pendingOnly = res.data.filter((tx: Transaction) => tx.status === "PENDING");
@@ -63,7 +65,6 @@ export default function TransaksiPage() {
         }
     }, [selectedTab]);
 
-    // Fetch log berdasarkan action
     const fetchLogsByAction = async (action: string) => {
         const res = await axios.get(`/audit-logs/by-action/${action}`);
         setLogs(res.data);
@@ -75,24 +76,72 @@ export default function TransaksiPage() {
         }
     }, [selectedAction, selectedTab]);
 
-    // Handle sorting
-    const handleSort = (key: keyof Transaction) => {
-    setSortConfig((prev) => ({
-        key,
-        direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-    }));
-};
+    const handleSort = (key: SortKey) => {
+        setSortConfig((prev) => {
+            if (!prev || prev.key !== key) return { key, direction: "asc" };
+            return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+        });
+    };
 
-const sortedData = [...data].sort((a, b) => {
-    const aVal = a[sortConfig.key];
-    const bVal = b[sortConfig.key];
-    if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
-    if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-});
+    // Sorting untuk tab pending
+    const sortedData = useMemo(() => {
+        if (selectedTab !== "pending") return data;
+        if (!sortConfig) return data;
 
+        const arr = [...data];
+        const { key, direction } = sortConfig;
 
-    // Handle approve/reject
+        arr.sort((a, b) => {
+            let aVal: string | number = a[key] as any;
+            let bVal: string | number = b[key] as any;
+
+            if (key === "createdAt") {
+                aVal = new Date(a.createdAt).getTime();
+                bVal = new Date(b.createdAt).getTime();
+            }
+
+            if (typeof aVal === "number" && typeof bVal === "number") {
+                return direction === "asc" ? aVal - bVal : bVal - aVal;
+            }
+
+            return direction === "asc"
+                ? String(aVal).localeCompare(String(bVal))
+                : String(bVal).localeCompare(String(aVal));
+        });
+
+        return arr;
+    }, [data, sortConfig, selectedTab]);
+
+    // Sorting + Filter tanggal untuk tab by-action
+    const sortedLogs = useMemo(() => {
+        let filteredLogs = [...logs];
+
+        // Filter berdasarkan tanggal
+        if (dateRange.start || dateRange.end) {
+            filteredLogs = filteredLogs.filter((log) => {
+                const logDate = new Date(log.createdAt).getTime();
+                const startDate = dateRange.start ? new Date(dateRange.start).getTime() : null;
+                const endDate = dateRange.end ? new Date(dateRange.end).getTime() : null;
+
+                return (
+                    (!startDate || logDate >= startDate) &&
+                    (!endDate || logDate <= endDate + 86400000 - 1)
+                );
+            });
+        }
+
+        // Sorting berdasarkan createdAt
+        if (sortConfig?.key === "createdAt") {
+            filteredLogs.sort((a, b) => {
+                const aVal = new Date(a.createdAt).getTime();
+                const bVal = new Date(b.createdAt).getTime();
+                return sortConfig.direction === "asc" ? aVal - bVal : bVal - aVal;
+            });
+        }
+
+        return filteredLogs;
+    }, [logs, sortConfig, dateRange]);
+
     const handleActionConfirm = async () => {
         if (!confirmAction.id || !confirmAction.decision) return;
         try {
@@ -100,6 +149,14 @@ const sortedData = [...data].sort((a, b) => {
                 decision: confirmAction.decision,
             });
             fetchPendingTransactions();
+
+            // Tambahkan notifikasi sukses sesuai action
+            setNotification(
+                confirmAction.decision === "APPROVED"
+                    ? "Transaksi berhasil disetujui!"
+                    : "Transaksi berhasil ditolak!"
+            );
+            setTimeout(() => setNotification(null), 3000);
         } catch (err) {
             console.error("Gagal approve/reject:", err);
         } finally {
@@ -107,54 +164,66 @@ const sortedData = [...data].sort((a, b) => {
         }
     };
 
+    const SortIcon = ({ active, direction }: { active: boolean; direction: "asc" | "desc" }) => (
+        <svg
+            viewBox="0 0 24 24"
+            className={`ml-1 inline h-4 w-4 transition-all duration-200 ${active ? "" : "opacity-40 group-hover:opacity-70"
+                } ${active && direction === "asc" ? "rotate-180" : ""}`}
+            aria-hidden
+        >
+            <path
+                d="M7 10l5 5 5-5"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+
     return (
         <div>
             <h1 className="text-2xl font-bold mb-4">Daftar Transaksi</h1>
-
-            {/* Tab Pilihan */}
-            <div className="w-full">
-                {/* Tombol Tab */}
-                <div className="flex gap-4 mb-4">
-                    <button
-                        onClick={() => setSelectedTab("pending")}
-                        className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform 
-            ${selectedTab === "pending"
-                                ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
-                                : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
-                            }`}
+            <AnimatePresence>
+                {notification && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50"
                     >
-                        Menunggu Validasi
-                    </button>
+                        {notification}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            {/* Tab */}
+            <div className="flex gap-4 mb-4">
+                <button
+                    onClick={() => setSelectedTab("pending")}
+                    className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
+                    ${selectedTab === "pending"
+                            ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
+                            : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
+                        }`}
+                >
+                    Menunggu Validasi
+                </button>
 
-                    <button
-                        onClick={() => setSelectedTab("by-action")}
-                        className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
-            ${selectedTab === "by-action"
-                                ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
-                                : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
-                            }`}
-                    >
-                        Berdasarkan Action
-                    </button>
-                </div>
-
-                {/* Konten Tab dengan Animasi Geser */}
-                <div className="relative w-full h-5 overflow-hidden">
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={selectedTab}
-                            initial={{ x: 50, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            exit={{ x: -50, opacity: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="absolute w-full"
-                        >
-                        </motion.div>
-                    </AnimatePresence>
-                </div>
+                <button
+                    onClick={() => setSelectedTab("by-action")}
+                    className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
+                    ${selectedTab === "by-action"
+                            ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
+                            : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
+                        }`}
+                >
+                    Berdasarkan Action
+                </button>
             </div>
 
-            {/* Tab Berdasarkan Action */}
+            {/* Tab By Action */}
             {selectedTab === "by-action" && (
                 <>
                     <div className="mb-6">
@@ -173,39 +242,74 @@ const sortedData = [...data].sort((a, b) => {
                         </select>
                     </div>
 
-                    <table className="w-full bg-white border-t border-gray-300 text-sm rounded-lg shadow-xl">
-                        <thead className="bg-[#f08c00] text-white">
+                    {/* Filter Tanggal dengan Kalender */}
+                    <div className="flex gap-4 mt-4">
+                        <div>
+                            <label className="font-medium mr-2">Dari:</label>
+                            <input
+                                type="date"
+                                value={dateRange.start}
+                                onChange={(e) =>
+                                    setDateRange({ ...dateRange, start: e.target.value })
+                                }
+                                className="p-2 border rounded focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="font-medium mr-2">Sampai:</label>
+                            <input
+                                type="date"
+                                value={dateRange.end}
+                                onChange={(e) =>
+                                    setDateRange({ ...dateRange, end: e.target.value })
+                                }
+                                className="p-2 border rounded focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    <table className="w-full border-gray-300 text-sm text-left rounded-lg">
+                        <thead className="bg-[#f2f2f2]">
                             <tr>
-                                <th className="px-4 py-2 border">Aktor</th>
-                                <th className="px-4 py-2 border">Aksi</th>
-                                <th className="px-4 py-2 border">Target</th>
-                                <th className="px-4 py-2 border">Metadata</th>
-                                <th className="px-4 py-2 border">Waktu</th>
+                                <th className="px-4 py-2">Aktor</th>
+                                <th className="px-4 py-2">Aksi</th>
+                                <th className="px-4 py-2">Target</th>
+                                <th className="px-4 py-2">Metadata</th>
+                                <th
+                                    className="px-4 py-2 cursor-pointer select-none group"
+                                    onClick={() => handleSort("createdAt")}
+                                >
+                                    <span className="inline-flex items-center">
+                                        Waktu
+                                        <SortIcon
+                                            active={sortConfig?.key === "createdAt"}
+                                            direction={sortConfig?.direction || "asc"}
+                                        />
+                                    </span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
-                            {logs.length === 0 ? (
+                            {sortedLogs.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-3 text-center text-gray-500">
                                         Tidak ada log yang tersedia.
                                     </td>
                                 </tr>
                             ) : (
-                                logs.map((log) => (
+                                sortedLogs.map((log) => (
                                     <tr key={log.id} className="border-t hover:bg-gray-50">
-                                        <td className="px-4 py-1 border">{log.actorName || "Sistem"}</td>
-                                        <td className="px-4 py-1 border">{log.action}</td>
-                                        <td className="px-4 py-1 border">
+                                        <td className="px-4 py-2">{log.actorName || "Sistem"}</td>
+                                        <td className="px-4 py-2">{log.action}</td>
+                                        <td className="px-4 py-2">
                                             {log.targetEntity} - {log.targetId}
                                         </td>
-                                        <td className="px-4 py-1 border">
+                                        <td className="px-4 py-2">
                                             {log.metadata?.title && <div>Title: {log.metadata.title}</div>}
                                             {log.metadata?.amount && (
                                                 <div>Jumlah: Rp. {Number(log.metadata.amount).toLocaleString()}</div>
                                             )}
-                                            {log.metadata?.decisionBy && (
-                                                <div>Oleh: {log.metadata.decisionBy}</div>
-                                            )}
+                                            {log.metadata?.decisionBy && <div>Oleh: {log.metadata.decisionBy}</div>}
                                         </td>
                                         <td className="px-4 py-2 text-sm text-gray-600">
                                             {new Date(log.createdAt).toLocaleString()}
@@ -218,81 +322,126 @@ const sortedData = [...data].sort((a, b) => {
                 </>
             )}
 
-            {/* Tab Pending */}
+            {/* Tab Pending (✅ dengan sortir + ikon) */}
             {selectedTab === "pending" && (
-    <table className="w-full border-gray-300 text-sm text-left rounded-lg">
-        <thead className="bg-[#f2f2f2]">
-            <tr>
-                <th onClick={() => handleSort("title")} className="cursor-pointer px-4 py-2">
-                    Judul {sortConfig.key === "title" && (sortConfig.direction === "asc" ? "▲" : "▼")}
-                </th>
-                <th onClick={() => handleSort("category")} className="cursor-pointer px-4 py-2">
-                    Kategori {sortConfig.key === "category" && (sortConfig.direction === "asc" ? "▲" : "▼")}
-                </th>
-                <th className="px-4 py-2">Deskripsi</th>
-                <th onClick={() => handleSort("amount")} className="cursor-pointer px-4 py-2">
-                    Nominal {sortConfig.key === "amount" && (sortConfig.direction === "asc" ? "▲" : "▼")}
-                </th>
-                <th className="px-4 py-2">Status</th>
-                <th onClick={() => handleSort("createdAt")} className="cursor-pointer px-4 py-2">
-                    Waktu {sortConfig.key === "createdAt" && (sortConfig.direction === "asc" ? "▲" : "▼")}
-                </th>
-                <th className="px-4 py-2 text-center">Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-                        {data.map((tx) => (
-                            <tr key={tx.id} className="border-t hover:bg-gray-50">
-                                <td className="px-4 py-2">{tx.title}</td>
-                                <td className="px-4 py-2">{tx.category}</td>
-                                <td className="px-4 py-2">{tx.description}</td>
-                                <td className="px-4 py-2">Rp. {tx.amount.toLocaleString()}</td>
-                                <td
-                                    className={`px-4 py-2 font-medium ${tx.status === "PENDING"
-                                        ? "text-yellow-600"
-                                        : tx.status === "APPROVED"
-                                            ? "text-green-600"
-                                            : "text-red-600"
-                                        }`}
-                                >
-                                    {tx.status}
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-600">
-                                            {new Date(tx.createdAt).toLocaleString()}
-                                </td>
-                                <td className="px-4 py-2 text-center">
-                                    {tx.status === "PENDING" && (
-                                        <div className="space-x-2">
-                                            <Button
-                                                onClick={() =>
-                                                    setConfirmAction({
-                                                        show: true,
-                                                        id: tx.id,
-                                                        decision: "APPROVED",
-                                                    })
-                                                }
-                                                className="bg-green-600 hover:bg-green-700 px-2 py-1 rounded"
-                                            >
-                                                Approve
-                                            </Button>
-                                            <Button
-                                                onClick={() =>
-                                                    setConfirmAction({
-                                                        show: true,
-                                                        id: tx.id,
-                                                        decision: "REJECTED",
-                                                    })
-                                                }
-                                                className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded"
-                                            >
-                                                Reject
-                                            </Button>
-                                        </div>
-                                    )}
+                <table className="w-full border-gray-300 text-sm text-left rounded-lg">
+                    <thead className="bg-[#f2f2f2]">
+                        <tr>
+                            <th
+                                className="px-4 py-2 cursor-pointer select-none group"
+                                onClick={() => handleSort("title")}
+                            >
+                                <span className="inline-flex items-center">
+                                    Judul
+                                    <SortIcon
+                                        active={sortConfig?.key === "title"}
+                                        direction={sortConfig?.direction || "asc"}
+                                    />
+                                </span>
+                            </th>
+                            <th
+                                className="px-4 py-2 cursor-pointer select-none group"
+                                onClick={() => handleSort("category")}
+                            >
+                                <span className="inline-flex items-center">
+                                    Kategori
+                                    <SortIcon
+                                        active={sortConfig?.key === "category"}
+                                        direction={sortConfig?.direction || "asc"}
+                                    />
+                                </span>
+                            </th>
+                            <th className="px-4 py-2">Deskripsi</th>
+                            <th
+                                className="px-4 py-2 cursor-pointer select-none group"
+                                onClick={() => handleSort("amount")}
+                            >
+                                <span className="inline-flex items-center">
+                                    Nominal
+                                    <SortIcon
+                                        active={sortConfig?.key === "amount"}
+                                        direction={sortConfig?.direction || "asc"}
+                                    />
+                                </span>
+                            </th>
+                            <th className="px-4 py-2">Status</th>
+                            <th
+                                className="px-4 py-2 cursor-pointer select-none group"
+                                onClick={() => handleSort("createdAt")}
+                            >
+                                <span className="inline-flex items-center">
+                                    Waktu
+                                    <SortIcon
+                                        active={sortConfig?.key === "createdAt"}
+                                        direction={sortConfig?.direction || "asc"}
+                                    />
+                                </span>
+                            </th>
+                            <th className="px-4 py-2 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {(sortedData as Transaction[]).length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="px-4 py-3 text-center text-gray-500">
+                                    Tidak ada transaksi yang tersedia.
                                 </td>
                             </tr>
-                        ))}
+                        ) : (
+                            (sortedData as Transaction[]).map((tx) => (
+                                <tr key={tx.id} className="border-t hover:bg-gray-50">
+                                    <td className="px-4 py-2">{tx.title}</td>
+                                    <td className="px-4 py-2">{tx.category}</td>
+                                    <td className="px-4 py-2">{tx.description}</td>
+                                    <td className="px-4 py-2">Rp. {tx.amount.toLocaleString()}</td>
+                                    <td
+                                        className={`px-4 py-2 font-medium ${tx.status === "PENDING"
+                                                ? "text-yellow-600"
+                                                : tx.status === "APPROVED"
+                                                    ? "text-green-600"
+                                                    : "text-red-600"
+                                            }`}
+                                    >
+                                        {tx.status}
+                                    </td>
+                                    <td className="px-4 py-2 text-sm text-gray-600">
+                                        {new Date(tx.createdAt).toLocaleString()}
+                                    </td>
+                                    <td className="px-4 py-2 text-center">
+                                        {tx.status === "PENDING" && (
+                                            <div className="space-x-2">
+                                                <Button
+                                                    onClick={() =>
+                                                        setConfirmAction({
+                                                            show: true,
+                                                            id: tx.id,
+                                                            decision: "APPROVED",
+                                                        })
+                                                    }
+                                                    className="bg-green-600 hover:bg-green-700 px-2 py-1 rounded"
+                                                >
+                                                    Approve
+                                                </Button>
+                                                <Button
+                                                    onClick={() =>
+                                                        setConfirmAction({
+                                                            show: true,
+                                                            id: tx.id,
+                                                            decision: "REJECTED",
+                                                        })
+                                                    }
+                                                    className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded"
+                                                >
+                                                    Reject
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </td>
+                                </tr>
+                            ))
+                        )}
                     </tbody>
+
                 </table>
             )}
 
@@ -312,9 +461,7 @@ const sortedData = [...data].sort((a, b) => {
                             exit={{ scale: 0.9, opacity: 0 }}
                         >
                             <h3 className="text-lg font-bold mb-4">
-                                {`Yakin ingin ${confirmAction.decision === "APPROVED"
-                                    ? "menyetujui"
-                                    : "menolak"
+                                {`Yakin ingin ${confirmAction.decision === "APPROVED" ? "menyetujui" : "menolak"
                                     } transaksi ini?`}
                             </h3>
                             <div className="flex justify-center gap-4">
@@ -328,9 +475,7 @@ const sortedData = [...data].sort((a, b) => {
                                     Ya
                                 </button>
                                 <button
-                                    onClick={() =>
-                                        setConfirmAction({ show: false, id: null, decision: null })
-                                    }
+                                    onClick={() => setConfirmAction({ show: false, id: null, decision: null })}
                                     className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
                                 >
                                     Batal

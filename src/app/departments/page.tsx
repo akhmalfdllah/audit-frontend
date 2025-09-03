@@ -16,6 +16,10 @@ export default function DepartmentsPage() {
     const [editId, setEditId] = useState<string | null>(null)
     const [showForm, setShowForm] = useState(false)
 
+    // state notifikasi & konfirmasi
+    const [notification, setNotification] = useState<{ type: "success" | "error", message: string } | null>(null)
+    const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, id: string | null }>({ show: false, id: null })
+
     useEffect(() => {
         fetch("http://localhost:3000/all", {
             credentials: "include",
@@ -56,9 +60,10 @@ export default function DepartmentsPage() {
                 setGroups(prev => [...prev, updated])
             }
             resetForm()
+            showNotification("success", "Group berhasil disimpan")
         } else {
             const err = await res.json().catch(() => ({}))
-            alert("Gagal menyimpan group: " + (err.message || res.status))
+            showNotification("error", "Gagal menyimpan group: " + (err.message || res.status))
         }
     }
 
@@ -72,23 +77,33 @@ export default function DepartmentsPage() {
         setShowForm(true)
     }
 
+    function requestDelete(id: string) {
+        setConfirmDelete({ show: true, id })
+    }
+
     async function handleDelete(id: string) {
-        if (!confirm("Yakin ingin menghapus group ini?")) return
         const res = await fetch(`http://localhost:3000/${id}`, {
             method: "DELETE",
             credentials: "include",
         })
         if (res.ok) {
             setGroups(prev => prev.filter(g => g.id !== id))
+            showNotification("success", "Group berhasil dihapus")
         } else {
-            alert("Gagal menghapus group")
+            showNotification("error", "Gagal menghapus group")
         }
+        setConfirmDelete({ show: false, id: null })
     }
 
     function resetForm() {
-        setForm({ name: "", description: "", type: "Internal" })
+        setForm({ name: "", description: "", type: "" })
         setEditId(null)
         setShowForm(false)
+    }
+
+    function showNotification(type: "success" | "error", message: string) {
+        setNotification({ type, message })
+        setTimeout(() => setNotification(null), 3000)
     }
 
     return (
@@ -97,23 +112,26 @@ export default function DepartmentsPage() {
 
             <button
                 onClick={() => {
-                    if (showForm) resetForm();
-                    else setShowForm(true);
+                    if (!showForm) {
+                        // buka form baru -> reset biar kosong
+                        resetForm()
+                        setShowForm(true)
+                    } else {
+                        // jika sudah terbuka -> tutup
+                        resetForm()
+                    }
                 }}
                 className="px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 
                 transform bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md mb-4"
-                style={{
-                    willChange: "transform",
-                    textShadow: "0 0 1px rgba(0, 0, 0, 0.1)"
-                }}
             >
                 {showForm ? "Tutup Form Group" : "Tambah Group"}
             </button>
 
+            {/* Modal Form */}
             <AnimatePresence>
                 {showForm && (
                     <motion.div
-                        className="fixed inset-0 backdrop-blur-[2px] flex justify-center items-center z-50"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -146,7 +164,7 @@ export default function DepartmentsPage() {
                                         name="name"
                                         value={form.name}
                                         onChange={handleFormChange}
-                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                        className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
                                         required
                                     />
                                 </div>
@@ -158,7 +176,7 @@ export default function DepartmentsPage() {
                                         name="description"
                                         value={form.description}
                                         onChange={handleFormChange}
-                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                        className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
                                     />
                                 </div>
 
@@ -169,7 +187,7 @@ export default function DepartmentsPage() {
                                         name="type"
                                         value={form.type}
                                         onChange={handleFormChange}
-                                        className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                        className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
                                     >
                                         <option value="" disabled>Pilih Tipe</option>
                                         <option value="Internal">Internal</option>
@@ -180,7 +198,7 @@ export default function DepartmentsPage() {
 
                                 <button
                                     type="submit"
-                                    className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded transition-transform transform hover:scale-102 w-full"
+                                    className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded w-full"
                                 >
                                     {editId ? "Update" : "Simpan"}
                                 </button>
@@ -190,6 +208,7 @@ export default function DepartmentsPage() {
                 )}
             </AnimatePresence>
 
+            {/* Tabel */}
             <table className="w-full border-gray-300 text-sm text-left rounded-lg">
                 <thead className="bg-[#f2f2f2]">
                     <tr>
@@ -213,7 +232,7 @@ export default function DepartmentsPage() {
                                     Edit
                                 </button>
                                 <button
-                                    onClick={() => handleDelete(group.id)}
+                                    onClick={() => requestDelete(group.id)}
                                     className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
                                 >
                                     Hapus
@@ -223,6 +242,57 @@ export default function DepartmentsPage() {
                     ))}
                 </tbody>
             </table>
+
+            {/* Notifikasi */}
+            <AnimatePresence>
+                {notification && (
+                    <motion.div
+                        initial={{ y: -50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -50, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 text-white ${notification.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+                    >
+                        {notification.message}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Konfirmasi Hapus */}
+            <AnimatePresence>
+                {confirmDelete.show && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 backdrop-blur-[2px]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <motion.div
+                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                        >
+                            <h2 className="text-lg font-bold mb-4">Konfirmasi Hapus</h2>
+                            <p className="mb-4">Apakah Anda yakin ingin menghapus group ini?</p>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => confirmDelete.id && handleDelete(confirmDelete.id)}
+                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                >
+                                    Hapus
+                                </button>
+                                <button
+                                    onClick={() => setConfirmDelete({ show: false, id: null })}
+                                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }

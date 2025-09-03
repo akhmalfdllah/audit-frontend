@@ -225,19 +225,20 @@ export default function UsersPage() {
             <AnimatePresence>
                 {confirmDelete.show && (
                     <motion.div
-                        className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+                        className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 backdrop-blur-[2px]"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                     >
                         <motion.div
-                            className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full text-center"
+                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm"
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                         >
-                            <h3 className="text-lg font-bold mb-4">Yakin ingin menghapus user ini?</h3>
-                            <div className="flex justify-center gap-4">
+                            <h2 className="text-lg font-bold mb-4">Konfirmasi Hapus</h2>
+                            <p className="mb-4">Apakah Anda yakin ingin menghapus user ini?</p>
+                            <div className="flex justify-end gap-2">
                                 <button
                                     onClick={confirmDeleteUser}
                                     className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
@@ -308,7 +309,7 @@ export default function UsersPage() {
             <AnimatePresence>
                 {showForm && (
                     <motion.div
-                        className="fixed inset-0 backdrop-blur-[2px] flex justify-center items-center z-50"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}

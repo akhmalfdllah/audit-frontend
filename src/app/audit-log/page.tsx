@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react"
 import axios from "@/lib/api"
+import { motion } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
 
 type Log = {
     id: string
@@ -19,9 +22,6 @@ const actions = [
     "DELETE_USER",
     "SIGNOUT",
     "SIGNIN",
-    "CREATE_TRANSACTION",
-    "APPROVE_TRANSACTION",
-    "REJECT_TRANSACTION",
     "CREATE_GROUP",
     "UPDATE_GROUP",
     "DELETE_GROUP",
@@ -32,27 +32,38 @@ export default function AuditLogPage() {
     const [selectedTab, setSelectedTab] = useState<"semua" | "by-action">("semua")
     const [selectedAction, setSelectedAction] = useState<string>("")
     const [page, setPage] = useState(1)
+    const [hasMore, setHasMore] = useState(true)
+    const [allActionLogs, setAllActionLogs] = useState<Log[]>([]);
 
     const fetchLogsByAction = async (action: string) => {
-        const res = await axios.get(`/audit-logs/by-action/${action}`)
-        setLogs(res.data)
-    }
+        const res = await axios.get(`/audit-logs/by-action/${action}`);
+        setAllActionLogs(res.data);
+        setPage(1);
+    };
 
     useEffect(() => {
-        setLogs([])
-        setPage(1)
-    }, [selectedTab])
+        if (selectedTab === "by-action") {
+            const startIndex = (page - 1) * 10;
+            const endIndex = startIndex + 10;
+            setLogs(allActionLogs.slice(startIndex, endIndex));
+        }
+    }, [page, allActionLogs, selectedTab]);
 
     const fetchAllLogs = useCallback(async () => {
-        const res = await axios.get(`/audit-logs?page=${page}`);
-        setLogs(res.data);
+        const offset = (page - 1) * 10;
+        const res = await axios.get(`/audit-logs/paginated?offset=${offset}&limit=10`);
+        const filteredLogs = res.data.data.filter((log: Log) =>
+            actions.includes(log.action)
+        );
+        setLogs(filteredLogs);
+        setHasMore(res.data.hasMore);
     }, [page]);
 
     useEffect(() => {
         if (selectedTab === "semua") {
-            fetchAllLogs();
+            fetchAllLogs()
         }
-    }, [selectedTab, page, fetchAllLogs]);
+    }, [selectedTab, page, fetchAllLogs])
 
     useEffect(() => {
         if (selectedTab === "by-action" && selectedAction) {
@@ -64,6 +75,7 @@ export default function AuditLogPage() {
         <div>
             <h1 className="text-2xl font-bold mb-4 text-[#635d40]">Audit Log</h1>
 
+            {/* Tab */}
             <div className="flex gap-4 mb-4">
                 <button
                     onClick={() => {
@@ -71,7 +83,7 @@ export default function AuditLogPage() {
                         setSelectedAction("");
                     }}
                     className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
-      ${selectedTab === "semua"
+                        ${selectedTab === "semua"
                             ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
                             : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
                         }`}
@@ -81,7 +93,7 @@ export default function AuditLogPage() {
                 <button
                     onClick={() => setSelectedTab("by-action")}
                     className={`px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 transform
-      ${selectedTab === "by-action"
+                        ${selectedTab === "by-action"
                             ? "bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md"
                             : "bg-gray-100 border-transparent hover:scale-105 hover:shadow-md hover:border hover:border-[#f08c00]"
                         }`}
@@ -90,6 +102,7 @@ export default function AuditLogPage() {
                 </button>
             </div>
 
+            {/* Dropdown By-Action */}
             {selectedTab === "by-action" && (
                 <div className="mb-6">
                     <label className="font-medium mr-2">Pilih Action:</label>
@@ -100,23 +113,22 @@ export default function AuditLogPage() {
                     >
                         <option value="">-- Pilih Action --</option>
                         {actions.map((act) => (
-                            <option key={act} value={act}>
-                                {act}
-                            </option>
+                            <option key={act} value={act}>{act}</option>
                         ))}
                     </select>
                 </div>
             )}
 
-            <div className="overflow-x-auto">
+            {/* Tabel Log */}
+            <div className="overflow-x-auto min-h-[410px]">
                 <table className="w-full border-gray-300 text-sm text-left rounded-lg">
                     <thead className="bg-[#f2f2f2]">
                         <tr>
-                            <th className="px-4 py-2 text-left">Aktor</th>
-                            <th className="px-4 py-2 text-left">Aksi</th>
-                            <th className="px-4 py-2 text-left">Target</th>
-                            <th className="px-4 py-2 text-left">Metadata</th>
-                            <th className="px-4 py-2 text-left">Waktu</th>
+                            <th className="px-4 py-2">Aktor</th>
+                            <th className="px-4 py-2">Aksi</th>
+                            <th className="px-4 py-2">Target</th>
+                            <th className="px-4 py-2">Metadata</th>
+                            <th className="px-4 py-2">Waktu</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -147,22 +159,51 @@ export default function AuditLogPage() {
                 </table>
             </div>
 
-            {selectedTab === "semua" && (
-                <div className="flex justify-center mt-6 gap-2">
-                    <button
+            {/* Pagination By-Action */}
+            {selectedTab === "by-action" && (
+                <div className="flex justify-center mt-6 gap-4 items-center">
+                    <motion.button
+                        whileTap={{ scale: 0.85 }}
                         onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                         disabled={page === 1}
-                        className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50"
                     >
-                        Sebelumnya
-                    </button>
-                    <span className="px-4 py-1 text-sm font-medium">Halaman {page}</span>
-                    <button
+                        <ChevronLeft className="w-5 h-5" />
+                    </motion.button>
+                    <span className="px-4 py-1 text-sm font-medium">
+                        Halaman {page}
+                    </span>
+                    <motion.button
+                        whileTap={{ scale: 0.85 }}
                         onClick={() => setPage((prev) => prev + 1)}
-                        className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                        disabled={page * 10 >= allActionLogs.length}
+                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50"
                     >
-                        Selanjutnya
-                    </button>
+                        <ChevronRight className="w-5 h-5" />
+                    </motion.button>
+                </div>
+            )}
+
+            {/* Pagination Semua Log */}
+            {selectedTab === "semua" && (
+                <div className="flex justify-center mt-6 gap-2 items-center">
+                    <motion.button
+                        whileTap={{ scale: 0.85 }}
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={page === 1}
+                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50"
+                    >
+                        <ChevronLeft className="w-5 h-5" />
+                    </motion.button>
+                    <span className="px-4 py-1 text-sm font-medium">Halaman {page}</span>
+                    <motion.button
+                        whileTap={{ scale: 0.85 }}
+                        onClick={() => setPage((prev) => prev + 1)}
+                        disabled={!hasMore}
+                        className="p-2 bg-gray-200 rounded-full hover:bg-gray-300 disabled:opacity-50"
+                    >
+                        <ChevronRight className="w-5 h-5" />
+                    </motion.button>
                 </div>
             )}
         </div>

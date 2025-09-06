@@ -8,9 +8,12 @@ import { login } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setRole } = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -20,8 +23,15 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginInput) => {
-    const success = await login(data);
-    if (success) router.push("/dashboard");
+    const result = await login(data);
+    if (result.ok) {
+      // Ambil role dari hasil login (bukan dari /auth/me)
+      if (result.role) {
+        const normalized = result.role === "Admin" ? "admin" : "auditor";
+        setRole(normalized);
+      }
+      router.push("/dashboard");
+    }
   };
 
   return (

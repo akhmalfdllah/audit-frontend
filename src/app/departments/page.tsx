@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion";
+import AdminPage from "@/components/protected-routes/AdminPage"
 
 type Group = {
     id: string
@@ -107,192 +108,192 @@ export default function DepartmentsPage() {
     }
 
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-4">Manajemen Departemen / Grup</h1>
-
-            <button
-                onClick={() => {
-                    if (!showForm) {
-                        // buka form baru -> reset biar kosong
-                        resetForm()
-                        setShowForm(true)
-                    } else {
-                        // jika sudah terbuka -> tutup
-                        resetForm()
-                    }
-                }}
-                className="px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 
+        <AdminPage>
+            <div>
+                <button
+                    onClick={() => {
+                        if (!showForm) {
+                            // buka form baru -> reset biar kosong
+                            resetForm()
+                            setShowForm(true)
+                        } else {
+                            // jika sudah terbuka -> tutup
+                            resetForm()
+                        }
+                    }}
+                    className="px-4 py-2 rounded-md font-medium border-b-7 transition-all duration-200 
                 transform bg-[#635d40] text-white border-[#f08c00] scale-105 shadow-md mb-4"
-            >
-                {showForm ? "Tutup Form Group" : "Tambah Group"}
-            </button>
+                >
+                    {showForm ? "Tutup Form Group" : "Tambah Group"}
+                </button>
 
-            {/* Modal Form */}
-            <AnimatePresence>
-                {showForm && (
-                    <motion.div
-                        className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-50"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                    >
+                {/* Modal Form */}
+                <AnimatePresence>
+                    {showForm && (
                         <motion.div
-                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="fixed inset-0 bg-black/40 backdrop-blur-[2px] flex justify-center items-center z-50"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <button
-                                onClick={() => setShowForm(false)}
-                                className="absolute top-2 right-5 text-gray-500 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-all duration-150"
+                            <motion.div
+                                className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
                             >
-                                ✕
-                            </button>
+                                <button
+                                    onClick={() => setShowForm(false)}
+                                    className="absolute top-2 right-5 text-gray-500 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-100 transition-all duration-150"
+                                >
+                                    ✕
+                                </button>
 
-                            <form onSubmit={handleSubmit}>
-                                <h2 className="text-xl font-bold mb-4">
-                                    {editId ? "Edit Group" : "Tambah Group Baru"}
-                                </h2>
+                                <form onSubmit={handleSubmit}>
+                                    <h2 className="text-xl font-bold mb-4">
+                                        {editId ? "Edit Group" : "Tambah Group Baru"}
+                                    </h2>
 
-                                {/* --- Field Nama Group --- */}
-                                <div className="mb-2">
-                                    <label>Nama Group</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={form.name}
-                                        onChange={handleFormChange}
-                                        className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
-                                        required
-                                    />
-                                </div>
+                                    {/* --- Field Nama Group --- */}
+                                    <div className="mb-2">
+                                        <label>Nama Group</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={form.name}
+                                            onChange={handleFormChange}
+                                            className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
+                                            required
+                                        />
+                                    </div>
 
-                                {/* --- Deskripsi --- */}
-                                <div className="mb-2">
-                                    <label>Deskripsi</label>
-                                    <textarea
-                                        name="description"
-                                        value={form.description}
-                                        onChange={handleFormChange}
-                                        className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
-                                    />
-                                </div>
+                                    {/* --- Deskripsi --- */}
+                                    <div className="mb-2">
+                                        <label>Deskripsi</label>
+                                        <textarea
+                                            name="description"
+                                            value={form.description}
+                                            onChange={handleFormChange}
+                                            className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
+                                        />
+                                    </div>
 
-                                {/* --- Tipe Group --- */}
-                                <div className="mb-2">
-                                    <label>Tipe Group</label>
-                                    <select
-                                        name="type"
-                                        value={form.type}
-                                        onChange={handleFormChange}
-                                        className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
+                                    {/* --- Tipe Group --- */}
+                                    <div className="mb-2">
+                                        <label>Tipe Group</label>
+                                        <select
+                                            name="type"
+                                            value={form.type}
+                                            onChange={handleFormChange}
+                                            className="w-full border p-2 focus:border-[#f08c00] outline-none rounded-sm"
+                                        >
+                                            <option value="" disabled>Pilih Tipe</option>
+                                            <option value="Internal">Internal</option>
+                                            <option value="External">External</option>
+                                            <option value="System">System</option>
+                                        </select>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded w-full"
                                     >
-                                        <option value="" disabled>Pilih Tipe</option>
-                                        <option value="Internal">Internal</option>
-                                        <option value="External">External</option>
-                                        <option value="System">System</option>
-                                    </select>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    className="bg-[#f08c00] hover:bg-[#d87a00] text-white px-4 py-2 rounded w-full"
-                                >
-                                    {editId ? "Update" : "Simpan"}
-                                </button>
-                            </form>
+                                        {editId ? "Update" : "Simpan"}
+                                    </button>
+                                </form>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    )}
+                </AnimatePresence>
 
-            {/* Tabel */}
-            <table className="w-full border-gray-300 text-sm text-left rounded-lg">
-                <thead className="bg-[#f2f2f2]">
-                    <tr>
-                        <th className="px-4 py-2">Nama</th>
-                        <th className="px-4 py-2">Wilayah</th>
-                        <th className="px-4 py-2">Tipe</th>
-                        <th className="px-4 py-2 text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {groups.map(group => (
-                        <tr key={group.id} className="border-t hover:bg-gray-50">
-                            <td className="px-4 py-2">{group.name}</td>
-                            <td className="px-4 py-2">{group.description}</td>
-                            <td className="px-4 py-2">{group.type}</td>
-                            <td className="px-4 py-2 space-x-2 text-center">
-                                <button
-                                    onClick={() => startEdit(group)}
-                                    className="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-1 rounded"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => requestDelete(group.id)}
-                                    className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
-                                >
-                                    Hapus
-                                </button>
-                            </td>
+                {/* Tabel */}
+                <table className="w-full border-gray-300 text-sm text-left rounded-lg">
+                    <thead className="bg-[#f2f2f2]">
+                        <tr>
+                            <th className="px-4 py-2">Nama</th>
+                            <th className="px-4 py-2">Wilayah</th>
+                            <th className="px-4 py-2">Tipe</th>
+                            <th className="px-4 py-2 text-center">Aksi</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {groups.map(group => (
+                            <tr key={group.id} className="border-t hover:bg-gray-50">
+                                <td className="px-4 py-2">{group.name}</td>
+                                <td className="px-4 py-2">{group.description}</td>
+                                <td className="px-4 py-2">{group.type}</td>
+                                <td className="px-4 py-2 space-x-2 text-center">
+                                    <button
+                                        onClick={() => startEdit(group)}
+                                        className="bg-yellow-500 hover:bg-yellow-700 text-white px-2 py-1 rounded"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        onClick={() => requestDelete(group.id)}
+                                        className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
+                                    >
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
 
-            {/* Notifikasi */}
-            <AnimatePresence>
-                {notification && (
-                    <motion.div
-                        initial={{ y: -50, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -50, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 text-white ${notification.type === "success" ? "bg-green-600" : "bg-red-600"}`}
-                    >
-                        {notification.message}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* Konfirmasi Hapus */}
-            <AnimatePresence>
-                {confirmDelete.show && (
-                    <motion.div
-                        className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 backdrop-blur-[2px]"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                    >
+                {/* Notifikasi */}
+                <AnimatePresence>
+                    {notification && (
                         <motion.div
-                            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
+                            initial={{ y: -50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: -50, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 text-white ${notification.type === "success" ? "bg-green-600" : "bg-red-600"}`}
                         >
-                            <h2 className="text-lg font-bold mb-4">Konfirmasi Hapus</h2>
-                            <p className="mb-4">Apakah Anda yakin ingin menghapus group ini?</p>
-                            <div className="flex justify-end gap-2">
-                                <button
-                                    onClick={() => confirmDelete.id && handleDelete(confirmDelete.id)}
-                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                                >
-                                    Hapus
-                                </button>
-                                <button
-                                    onClick={() => setConfirmDelete({ show: false, id: null })}
-                                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                                >
-                                    Batal
-                                </button>
-                            </div>
+                            {notification.message}
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* Konfirmasi Hapus */}
+                <AnimatePresence>
+                    {confirmDelete.show && (
+                        <motion.div
+                            className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 backdrop-blur-[2px]"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <motion.div
+                                className="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm"
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.9, opacity: 0 }}
+                            >
+                                <h2 className="text-lg font-bold mb-4">Konfirmasi Hapus</h2>
+                                <p className="mb-4">Apakah Anda yakin ingin menghapus group ini?</p>
+                                <div className="flex justify-end gap-2">
+                                    <button
+                                        onClick={() => confirmDelete.id && handleDelete(confirmDelete.id)}
+                                        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                                    >
+                                        Hapus
+                                    </button>
+                                    <button
+                                        onClick={() => setConfirmDelete({ show: false, id: null })}
+                                        className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                                    >
+                                        Batal
+                                    </button>
+                                </div>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </AdminPage>
     )
 }

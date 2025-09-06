@@ -28,8 +28,6 @@ export default function DashboardPage() {
 
     return (
             <div>
-                <h1 className="text-2xl font-bold mb-6 text-[#635d40]">Dashboard</h1>
-
                 {/* Box Ringkasan */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-[#635d40] mb-6">
                     <motion.div

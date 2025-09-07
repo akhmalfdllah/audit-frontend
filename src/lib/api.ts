@@ -37,23 +37,20 @@ api.interceptors.response.use(
 
       isRefreshing = true
 
-      try {
-        await axios.post(
-          "http://localhost:3000/auth/refresh",
-          {},
-          { withCredentials: true }
-        )
+      const originalError = err
 
+      try {
+        await axios.post("http://localhost:3000/auth/refresh", {}, { withCredentials: true })
         isRefreshing = false
         processQueue(null)
-
         return api(originalRequest)
       } catch (refreshError) {
         isRefreshing = false
         processQueue(refreshError, null)
         window.location.href = "/login"
-        return Promise.reject(refreshError)
+        return Promise.reject(originalError) // <== kirim error awal, bukan error refresh
       }
+
     }
 
     return Promise.reject(err)

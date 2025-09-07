@@ -193,7 +193,7 @@ export default function TransaksiPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.3 }}
-                            className="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50"
+                            className="fixed top-20 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50"
                         >
                             {notification}
                         </motion.div>

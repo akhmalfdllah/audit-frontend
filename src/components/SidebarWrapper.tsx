@@ -25,7 +25,7 @@ export default function SidebarWrapper({ children, activeHome }: SidebarWrapperP
   }, [loading, role, pathname, router]);
 
   // Loading state → jangan render konten
-  if (loading) {
+  if (loading && pathname !== "/login") {
   return <LoadingScreen message="Memeriksa akses..." layout="vertical" />;
 }
 

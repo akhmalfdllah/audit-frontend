@@ -50,7 +50,7 @@ export default function UsersPage() {
         password: "",
         confirmPassword: "",
         role: "",
-        status: "Active",
+        status: "",
         groupId: "",
     })
     const [editId, setEditId] = useState<string | null>(null)
@@ -159,7 +159,7 @@ export default function UsersPage() {
                 password: "",
                 confirmPassword: "",
                 role: "",
-                status: "Active",
+                status: "",
                 groupId: "",
             });
             setEditId(null);
@@ -197,7 +197,7 @@ export default function UsersPage() {
             password: "",
             confirmPassword: "",
             role: user.role ?? "",
-            status: user.status ?? "Active",
+            status: user.status ?? "",
             groupId: user.group?.id ?? "",
         })
         setEditId(user.id)
@@ -216,7 +216,7 @@ export default function UsersPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
                             transition={{ duration: 0.3 }}
-                            className="fixed top-5 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50"
+                            className="fixed top-20 right-5 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-80"
                         >
                             {notification}
                         </motion.div>
@@ -290,7 +290,7 @@ export default function UsersPage() {
                                 password: "",
                                 confirmPassword: "",
                                 role: "",
-                                status: "Active",
+                                status: "",
                                 groupId: "",
                             })
                             setShowForm(true)
@@ -422,6 +422,23 @@ export default function UsersPage() {
                                             <option value="Admin">Admin</option>
                                             <option value="Auditor">Auditor</option>
                                             <option value="ERP">ERP</option>
+                                        </select>
+                                    </div>
+
+                                    {/* --- Status --- */}
+                                    <div className="mb-2">
+                                        <label>Status</label>
+                                        <select
+                                            value={formData.status}
+                                            onChange={(e) =>
+                                                setFormData({ ...formData, status: e.target.value })
+                                            }
+                                            className="w-full border p-2 focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none rounded-sm"
+                                            required
+                                        >
+                                            <option value="">Pilih Status</option>
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
                                         </select>
                                     </div>
 

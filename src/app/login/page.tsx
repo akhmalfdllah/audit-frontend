@@ -9,10 +9,12 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
+import { useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
   const { setRole } = useAuth();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -23,14 +25,24 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginInput) => {
+    setErrorMessage(null); // reset error lama
     const result = await login(data);
+
     if (result.ok) {
-      // Ambil role dari hasil login (bukan dari /auth/me)
       if (result.role) {
         const normalized = result.role === "Admin" ? "admin" : "auditor";
         setRole(normalized);
       }
       router.push("/dashboard");
+    } else {
+      // 🔹 tangani pesan khusus dari backend
+      if (result.error?.includes("tidak aktif")) {
+        setErrorMessage("Akun Anda dinonaktifkan, Silakan hubungi admin.");
+      } else if (result.error?.includes("invalid email or password")) {
+        setErrorMessage("Email atau password salah.");
+      } else {
+        setErrorMessage(result.error || "Login gagal, coba lagi.");
+      }
     }
   };
 
@@ -70,6 +82,12 @@ export default function LoginPage() {
               <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
             )}
           </div>
+
+          {/* 🔹 tampilkan error login dari backend */}
+          {errorMessage && (
+            <p className="text-sm text-red-500 text-center">{errorMessage}</p>
+          )}
+
           <Button
             type="submit"
             disabled={isSubmitting}

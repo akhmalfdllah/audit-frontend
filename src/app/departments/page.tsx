@@ -251,7 +251,7 @@ export default function DepartmentsPage() {
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: -50, opacity: 0 }}
                             transition={{ duration: 0.3 }}
-                            className={`fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 text-white ${notification.type === "success" ? "bg-green-600" : "bg-red-600"}`}
+                            className={`fixed top-20 right-4 px-4 py-2 rounded shadow-lg z-50 text-white ${notification.type === "success" ? "bg-green-600" : "bg-red-600"}`}
                         >
                             {notification.message}
                         </motion.div>

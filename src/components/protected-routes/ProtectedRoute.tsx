@@ -1,6 +1,7 @@
+// src/components/protected-routes/ProtectedRoute.tsx
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock } from "lucide-react";
@@ -13,28 +14,31 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { role, loading } = useAuth();
+  const { role, loading, isAuthAction } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [unauthorized, setUnauthorized] = useState(false);
 
-  // 🔧 Anti-flicker hanya jika bukan di /login
+  // Tampilkan LoadingScreen hanya saat inisialisasi auth dan bukan di /login
   if (loading && pathname !== "/login") {
     return <LoadingScreen message="Memeriksa akses..." layout="horizontal" />;
   }
 
-  // Kalau belum login → langsung redirect ke /login
-  if (!role) {
-    router.replace("/login");
-    return null;
-  }
+  // redirect ke /login hanya jika:
+  // - inisialisasi selesai (loading === false)
+  // - bukan sedang proses login (isAuthAction === false)
+  // - role belum ada
+  // - saat ini bukan di /login
+  useEffect(() => {
+    if (!loading && !isAuthAction && !role && pathname !== "/login") {
+      router.replace("/login");
+    }
+  }, [loading, isAuthAction, role, pathname, router]);
 
-  // Kalau login tapi role tidak sesuai
-  if (!allowedRoles.includes(role.toLowerCase() as "admin" | "auditor")) {
+  // cek unauthorized (role tersedia dan tidak cocok)
+  if (role && !allowedRoles.includes(role.toLowerCase() as "admin" | "auditor")) {
     if (!unauthorized) {
       setUnauthorized(true);
-
-      // setelah 2 detik balik ke dashboard
       setTimeout(() => {
         router.replace("/dashboard");
       }, 2000);
@@ -62,6 +66,5 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     );
   }
 
-  // Kalau sudah lolos semua → render halaman
   return <>{children}</>;
 }

@@ -1,3 +1,4 @@
+// src/app/login/page.tsx  (atau file LoginPage kamu)
 "use client";
 
 import { motion } from "framer-motion";
@@ -13,7 +14,7 @@ import { useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setRole } = useAuth();
+  const { setRole, setIsAuthAction } = useAuth(); // <-- gunakan setter
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const {
@@ -25,24 +26,29 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginInput) => {
-    setErrorMessage(null); // reset error lama
-    const result = await login(data);
-
-    if (result.ok) {
-      if (result.role) {
-        const normalized = result.role === "Admin" ? "admin" : "auditor";
-        setRole(normalized);
-      }
-      router.push("/dashboard");
-    } else {
-      // 🔹 tangani pesan khusus dari backend
-      if (result.error?.includes("tidak aktif")) {
-        setErrorMessage("Akun Anda dinonaktifkan, Silakan hubungi admin.");
-      } else if (result.error?.includes("invalid email or password")) {
-        setErrorMessage("Email atau password salah.");
+    setErrorMessage(null);
+    setIsAuthAction(true); // <-- mulai aksi auth (blokir redirect/loading)
+    try {
+      const result = await login(data);
+      if (result.ok) {
+        if (result.role) {
+          const normalized = result.role === "Admin" ? "admin" : "auditor";
+          setRole(normalized);
+        }
+        router.push("/dashboard");
       } else {
-        setErrorMessage(result.error || "Login gagal, coba lagi.");
+        // terima pesan yang dikembalikan login() (backend message diteruskan)
+        if (result.error?.includes("tidak aktif")) {
+          setErrorMessage("Akun Anda tidak aktif. Silakan hubungi admin.");
+        } else if (result.error?.includes("invalid") || result.error?.includes("email")) {
+          setErrorMessage("Email atau password salah.");
+        } else {
+          setErrorMessage(result.error || "Login gagal, coba lagi.");
+        }
       }
+    } finally {
+      // selesaikan aksi auth sehingga guards boleh kembali bekerja
+      setIsAuthAction(false);
     }
   };
 
@@ -83,7 +89,6 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* 🔹 tampilkan error login dari backend */}
           {errorMessage && (
             <p className="text-sm text-red-500 text-center">{errorMessage}</p>
           )}

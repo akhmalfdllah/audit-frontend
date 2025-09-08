@@ -25,9 +25,10 @@ export default function ChangePasswordForm({ onClose }: Props) {
         setMessage("");
 
         try {
-            await axios.post(
-                "/auth/change-password",
-                { currentPassword, newPassword },
+            console.log({ currentPassword, newPassword, confirmPassword });
+            await axios.patch(
+                "/user/me/password",
+                { currentPassword, newPassword, confirmPassword },
                 { withCredentials: true }
             );
             setMessage("Password berhasil diubah");
@@ -35,7 +36,7 @@ export default function ChangePasswordForm({ onClose }: Props) {
             setNewPassword("");
             setConfirmPassword("");
             // opsional: logout user setelah ganti password
-            // onClose();
+            onClose();
         } catch (err: any) {
             setMessage(err.response?.data?.message || "Terjadi kesalahan");
         } finally {
@@ -52,7 +53,7 @@ export default function ChangePasswordForm({ onClose }: Props) {
                 placeholder="Password Lama"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                className="border rounded px-3 py-2 w-full"
+                className="border rounded px-3 py-2 w-full focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none"
                 required
             />
 
@@ -61,7 +62,7 @@ export default function ChangePasswordForm({ onClose }: Props) {
                 placeholder="Password Baru"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="border rounded px-3 py-2 w-full"
+                className="border rounded px-3 py-2 w-full focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none"
                 required
             />
 
@@ -70,14 +71,14 @@ export default function ChangePasswordForm({ onClose }: Props) {
                 placeholder="Konfirmasi Password Baru"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="border rounded px-3 py-2 w-full"
+                className="border rounded px-3 py-2 w-full focus:border-[#f08c00] focus:ring-0.5 focus:ring-[#f08c00] outline-none"
                 required
             />
 
             <button
                 type="submit"
                 disabled={loading}
-                className="bg-[#635d40] text-white px-4 py-2 rounded hover:bg-[#f08c00]"
+                className="bg-[#f08c00] text-white px-4 py-2 rounded hover:bg-[#d87a00] transition-transform transform hover:scale-102 w-full"
             >
                 {loading ? "Menyimpan..." : "Ganti Password"}
             </button>

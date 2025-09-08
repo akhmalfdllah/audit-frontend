@@ -317,7 +317,7 @@ export default function UsersPage() {
                             transition={{ duration: 0.2 }}
                         >
                             <motion.div
-                                className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative"
+                                className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg relative max-h-[80vh] overflow-y-auto"
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 exit={{ scale: 0.9, opacity: 0 }}

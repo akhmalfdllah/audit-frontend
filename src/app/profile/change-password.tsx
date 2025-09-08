@@ -36,10 +36,11 @@ export default function ChangePasswordPage() {
     setErrorMsg(null);
     try {
       await axios.patch(
-        "/user/me",
+        "/user/me/password",
         {
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
+          confirmPassword: data.confirmPassword,
         },
         { withCredentials: true }
       );

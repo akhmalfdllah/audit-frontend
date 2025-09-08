@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 import { LogOut, ChevronDown, KeyRound, CircleUserRound } from "lucide-react";
 import axios from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import ChangePasswordForm from "./ChangePasswordForm"; // pastikan path sesuai
 
 export default function ProfileDropdown() {
   const { role, logout } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   // Tutup saat klik di luar atau Escape
@@ -31,23 +33,21 @@ export default function ProfileDropdown() {
     };
   }, []);
 
-  // Kalau bukan admin/auditor → jangan render apapun
   if (!role || !["admin", "auditor"].includes(role.toLowerCase())) {
     return null;
   }
 
   const handleLogout = async () => {
-  try {
-    await axios.post("/auth/signout", {}, { withCredentials: true });
-  } catch (err) {
-    console.warn("Signout request failed:", err);
-  } finally {
-    logout(); // clear context
-    // ganti history supaya back tidak mengembalikan halaman private
-    window.history.replaceState(null, "", "/login");
-    router.replace("/login");
-  }
-};
+    try {
+      await axios.post("/auth/signout", {}, { withCredentials: true });
+    } catch (err) {
+      console.warn("Signout request failed:", err);
+    } finally {
+      logout();
+      window.history.replaceState(null, "", "/login");
+      router.replace("/login");
+    }
+  };
 
   return (
     <div ref={rootRef} className="relative">
@@ -61,16 +61,17 @@ export default function ProfileDropdown() {
         title={role}
       >
         <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white">
-  <CircleUserRound className="w-6 h-6" />
-</div>
+          <CircleUserRound className="w-6 h-6" />
+        </div>
         <div className="hidden md:flex flex-col text-left">
           <span className="text-sm font-medium text-white leading-none">
-            {role.toUpperCase()}
+            {role.charAt(0).toUpperCase() + role.slice(1)}
           </span>
         </div>
         <ChevronDown
-          className={`w-4 h-4 text-white transition-transform ${open ? "rotate-180" : ""
-            }`}
+          className={`w-4 h-4 text-white transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
         />
       </motion.button>
 
@@ -89,11 +90,11 @@ export default function ProfileDropdown() {
             <div className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-700">
-  <CircleUserRound className="w-8 h-8" />
-</div>
+                  <CircleUserRound className="w-8 h-8" />
+                </div>
                 <div className="flex-1">
                   <div className="text-sm font-semibold text-gray-900">
-                    {role.toUpperCase()}
+                    {role.charAt(0).toUpperCase() + role.slice(1)}
                   </div>
                 </div>
               </div>
@@ -103,7 +104,10 @@ export default function ProfileDropdown() {
 
             <div className="p-2">
               <button
-                onClick={() => setOpen(false) /* bisa juga buka modal ganti password */}
+                onClick={() => {
+                  setOpen(false);
+                  setShowChangePassword(true); // buka modal
+                }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-50 text-sm text-gray-700"
                 role="menuitem"
               >
@@ -119,6 +123,36 @@ export default function ProfileDropdown() {
                 <span>Logout</span>
               </button>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal Ganti Password */}
+      <AnimatePresence>
+        {showChangePassword && (
+          <motion.div
+            className="fixed inset-0 flex bg-black/40 backdrop-blur-[2px] items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-white rounded-lg shadow-lg w-full max-w-md"
+            >
+              <div className="flex justify-between items-center px-4 py-2 border-b">
+                <h2 className="text-lg font-semibold">Ganti Password</h2>
+                <button
+                  onClick={() => setShowChangePassword(false)}
+                  className="text-gray-500 w-8 h-8 flex items-center justify-center rounded hover:bg-gray-200 transition-all duration-150"
+                >
+                  ✕
+                </button>
+              </div>
+              <ChangePasswordForm onClose={() => setShowChangePassword(false)} />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

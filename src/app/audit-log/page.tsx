@@ -6,14 +6,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import axios from "@/lib/api"
 import AdminPage from "@/components/protected-routes/AdminPage"
 
-
 type Log = {
     id: string
     actorName: string
     action: string
     targetEntity: string
     targetId: string
-    metadata: Record<string, string | number | boolean>
     createdAt: string
 }
 
@@ -21,8 +19,6 @@ const actions = [
     "CREATE_USER",
     "UPDATE_USER",
     "DELETE_USER",
-    "SIGNOUT",
-    "SIGNIN",
     "CREATE_GROUP",
     "UPDATE_GROUP",
     "DELETE_GROUP",
@@ -127,14 +123,13 @@ export default function AuditLogPage() {
                                 <th className="px-4 py-2">Aktor</th>
                                 <th className="px-4 py-2">Aksi</th>
                                 <th className="px-4 py-2">Target</th>
-                                <th className="px-4 py-2">Metadata</th>
                                 <th className="px-4 py-2">Waktu</th>
                             </tr>
                         </thead>
                         <tbody>
                             {logs.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-4 py-3 text-center text-gray-500">
+                                    <td colSpan={4} className="px-4 py-3 text-center text-gray-500">
                                         Tidak ada log yang tersedia.
                                     </td>
                                 </tr>
@@ -144,11 +139,6 @@ export default function AuditLogPage() {
                                         <td className="px-4 py-2">{log.actorName || "Sistem"}</td>
                                         <td className="px-4 py-2">{log.action}</td>
                                         <td className="px-4 py-2">{log.targetEntity} - {log.targetId}</td>
-                                        <td className="px-4 py-2">
-                                            {log.metadata?.title && <div>Title: {log.metadata.title}</div>}
-                                            {log.metadata?.amount && <div>Jumlah: Rp {Number(log.metadata.amount).toLocaleString()}</div>}
-                                            {log.metadata?.decisionBy && <div>Oleh: {log.metadata.decisionBy}</div>}
-                                        </td>
                                         <td className="px-4 py-2 text-sm text-gray-600">
                                             {new Date(log.createdAt).toLocaleString()}
                                         </td>

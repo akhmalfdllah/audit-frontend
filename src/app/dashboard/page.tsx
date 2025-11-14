@@ -127,7 +127,7 @@ export default function DashboardPage() {
                         <YAxis allowDecimals={false} />
                         <Tooltip />
                         <Legend />
-                        <Bar/>
+                        <Bar dataKey="value" name="jumlah"/>
                     </BarChart>
                 </ResponsiveContainer>
             </div>

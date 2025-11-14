@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children, allowedRoles }: Props) {
   // UI akses ditolak
   if (role && !allowedRoles.includes(role)) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-gray-50/80 backdrop-blur-sm p-6">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50/80 backdrop-blur-sm p-6">
         <motion.div
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}

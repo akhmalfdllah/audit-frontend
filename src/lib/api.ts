@@ -4,6 +4,7 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
   withCredentials: true,
 });
+console.log("API BASE URL:", process.env.NEXT_PUBLIC_API_BASE_URL);
 
 let isRefreshing = false;
 let failedQueue: {

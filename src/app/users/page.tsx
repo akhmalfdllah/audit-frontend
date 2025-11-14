@@ -60,7 +60,7 @@ export default function UsersPage() {
 
     const fetchUsers = useCallback(async (query = "") => {
         try {
-            const res = await fetch(`http://localhost:3000/user/all${query}`, {
+            const res = await fetch(`https://skripsi-production-5a12.up.railway.app/user/all${query}`, {
                 credentials: "include",
                 cache: "no-store",
             })
@@ -86,7 +86,7 @@ export default function UsersPage() {
     }, [fetchUsers])
 
     useEffect(() => {
-        fetch("http://localhost:3000/all", {
+        fetch("https://skripsi-production-5a12.up.railway.app/all", {
             credentials: "include", // penting untuk kirim cookie token
         })
             .then(async (res) => {

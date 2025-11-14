@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 import axios from "@/lib/api"
-import { FileText, CheckCircle, XCircle, UserCheck } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, CartesianGrid } from "recharts"
+import { FileText, CheckCircle, XCircle, Users } from "lucide-react"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { motion } from "framer-motion"
 
 export default function DashboardPage() {
@@ -24,112 +24,128 @@ export default function DashboardPage() {
     const totalDecision =
         summary.approvedTransactions + summary.rejectedTransactions
 
-    const barData = [
-        { name: "Disetujui", value: summary.approvedTransactions, fill: "#f08c00" },
-        { name: "Ditolak", value: summary.rejectedTransactions, fill: "#635d40" },
+    const pieData = [
+        { name: "Disetujui", value: summary.approvedTransactions, color: "#f08c00" },
+        { name: "Ditolak", value: summary.rejectedTransactions, color: "#635d40" },
     ]
 
     return (
         <div className="space-y-8">
 
-            {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-[#635d40]">Dashboard</h1>
-                <p className="text-sm text-gray-500">Ringkasan aktivitas audit</p>
-            </div>
+            {/* ====================== */}
+            {/*      STAT BOXES       */}
+            {/* ====================== */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
 
-            {/* Summary Card GRID */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
-
-                {/* Universal Card Template */}
+                {/* Template Card Modern */}
                 {[
                     {
-                        label: "Total Transaksi",
+                        title: "Total Transaksi",
                         value: summary.totalTransactions,
-                        icon: <FileText className="w-7 h-7 text-[#f08c00]" />,
-                        delay: 0.1
+                        icon: FileText,
+                        color: "from-[#f08c00]/20 to-[#f08c00]/5",
+                        glow: "shadow-[0_0_20px_rgba(240,140,0,0.25)]",
                     },
                     {
-                        label: "Diputuskan",
+                        title: "Sudah Diputuskan",
                         value: totalDecision,
-                        icon: <FileText className="w-7 h-7 text-blue-600" />,
-                        delay: 0.15
+                        icon: FileText,
+                        color: "from-[#635d40]/20 to-[#635d40]/5",
+                        glow: "shadow-[0_0_20px_rgba(99,93,64,0.25)]",
                     },
                     {
-                        label: "Disetujui",
+                        title: "Disetujui",
                         value: summary.approvedTransactions,
-                        icon: <CheckCircle className="w-7 h-7 text-green-600" />,
-                        delay: 0.2
+                        icon: CheckCircle,
+                        color: "from-green-500/20 to-green-500/5",
+                        glow: "shadow-[0_0_20px_rgba(34,197,94,0.25)]",
                     },
                     {
-                        label: "Ditolak",
+                        title: "Ditolak",
                         value: summary.rejectedTransactions,
-                        icon: <XCircle className="w-7 h-7 text-red-600" />,
-                        delay: 0.25
+                        icon: XCircle,
+                        color: "from-red-500/20 to-red-500/5",
+                        glow: "shadow-[0_0_20px_rgba(239,68,68,0.25)]",
                     },
                     {
-                        label: "User Aktif",
+                        title: "User Aktif",
                         value: summary.activeUsers,
-                        icon: <UserCheck className="w-7 h-7 text-green-600" />,
-                        delay: 0.3
+                        icon: Users,
+                        color: "from-green-600/20 to-green-600/5",
+                        glow: "shadow-[0_0_20px_rgba(22,163,74,0.25)]",
                     },
                     {
-                        label: "User Nonaktif",
+                        title: "User Tidak Aktif",
                         value: summary.inactiveUsers,
-                        icon: <UserCheck className="w-7 h-7 text-red-500" />,
-                        delay: 0.35
+                        icon: Users,
+                        color: "from-red-600/20 to-red-600/5",
+                        glow: "shadow-[0_0_20px_rgba(220,38,38,0.25)]",
                     },
-                ].map((card, idx) => (
+                ].map((item, i) => (
                     <motion.div
-                        key={idx}
+                        key={i}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: card.delay }}
-                        className="
-                            p-4 rounded-2xl bg-white/60 
-                            backdrop-blur-lg border shadow-sm 
-                            hover:shadow-md hover:-translate-y-1 
-                            transition-all cursor-default
-                        "
+                        transition={{ duration: 0.4 + i * 0.1 }}
+                        className={`
+                            bg-white/40 backdrop-blur-xl rounded-2xl border border-white/20 
+                            p-4 flex items-start gap-3 ${item.glow} 
+                            shadow-md hover:shadow-xl transition-all
+                            bg-gradient-to-br ${item.color}
+                        `}
                     >
-                        <div className="flex items-start gap-3">
-                            {card.icon}
-                            <div>
-                                <h2 className="font-semibold text-sm text-[#635d40]">{card.label}</h2>
-                                <p className="text-2xl font-bold mt-1 text-gray-800">
-                                    {card.value}
-                                </p>
-                            </div>
+                        <item.icon className="w-8 h-8 text-[#635d40]" />
+                        <div>
+                            <h2 className="font-semibold text-sm text-[#635d40]">
+                                {item.title}
+                            </h2>
+                            <motion.p
+                                className="text-2xl font-bold mt-1 text-[#635d40]"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.7 }}
+                            >
+                                {item.value}
+                                {item.title === "Sudah Diputuskan" && (
+                                    <span className="text-xs ml-1 text-gray-600">
+                                        (Jumlah)
+                                    </span>
+                                )}
+                            </motion.p>
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            {/* Chart Container */}
-            <motion.div
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="
-                    bg-white/70 backdrop-blur-lg 
-                    p-6 rounded-2xl border shadow-sm
-                "
-            >
-                <h2 className="text-lg font-semibold text-[#635d40] mb-4">
-                    Grafik Status Transaksi
+            {/* ====================== */}
+            {/*       DONUT CHART     */}
+            {/* ====================== */}
+            <div className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/20 p-8 shadow-sm">
+                <h2 className="text-xl font-semibold text-[#635d40] mb-4">
+                    Statistik Persentase Transaksi
                 </h2>
 
-                <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={barData}>
-                        <CartesianGrid strokeDasharray="3 3" opacity={0.4} />
-                        <XAxis dataKey="name" />
-                        <YAxis allowDecimals={false} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="value" name="Jumlah" radius={[6, 6, 0, 0]} />
-                    </BarChart>
-                </ResponsiveContainer>
-            </motion.div>
+                <div className="w-full h-80">
+                    <ResponsiveContainer>
+                        <PieChart>
+                            <Pie
+                                data={pieData}
+                                dataKey="value"
+                                nameKey="name"
+                                innerRadius="55%"
+                                outerRadius="75%"
+                                paddingAngle={4}
+                                animationDuration={900}
+                            >
+                                {pieData.map((entry, index) => (
+                                    <Cell key={index} fill={entry.color} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
         </div>
     )
 }

@@ -107,10 +107,18 @@ export default function DashboardPage() {
             </div>
 
             {/* BAR CHART */}
-            <div className="bg-white p-4 rounded-xl border shadow-sm">
-                <h2 className="text-lg font-semibold text-[#635d40] mb-4">
-                    Grafik Status Transaksi
-                </h2>
+            <div className="bg-white p-4 rounded-xl border shadow-sm relative">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-[#635d40]">
+                        Grafik Status Transaksi
+                    </h2>
+
+                    {/* 🔥 Total Disetujui + Ditolak */}
+                    <div className="px-3 py-1 bg-[#f08c00]/10 border border-[#f08c00]/30 text-[#635d40] rounded-lg text-sm font-medium">
+                        Total Diputuskan:{" "}
+                        <span className="font-bold text-[#f08c00]">{totalDecision}</span>
+                    </div>
+                </div>
 
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={barData}>
@@ -120,7 +128,6 @@ export default function DashboardPage() {
                         <Tooltip />
                         <Legend />
                         <Bar dataKey="value" name="Jumlah" />
-                        <p className="text-xl mt-1">{totalDecision}</p>
                     </BarChart>
                 </ResponsiveContainer>
             </div>

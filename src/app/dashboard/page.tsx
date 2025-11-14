@@ -33,7 +33,7 @@ export default function DashboardPage() {
     return (
         <div>
             {/* BOX RINGKASAN */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[#635d40] mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 text-[#635d40] mb-6">
 
                 {/* Total Transaksi */}
                 <motion.div
@@ -113,10 +113,10 @@ export default function DashboardPage() {
                         Grafik Status Transaksi
                     </h2>
 
-                    {/* 🔥 Total Disetujui + Ditolak */}
-                    <div className="px-3 py-1 bg-[#f08c00]/10 border border-[#f08c00]/30 text-[#635d40] rounded-lg text-sm font-medium">
+                    {/* Total Disetujui + Ditolak */}
+                    <div className="px-3 py-1 border border-[#f08c00]/30 text-[#635d40] rounded-lg text-sm font-medium">
                         Total Diputuskan:{" "}
-                        <span className="font-bold text-[#f08c00]">{totalDecision}</span>
+                        <span className="font-bold text-[#635d40]">{totalDecision}</span>
                     </div>
                 </div>
 
@@ -127,7 +127,6 @@ export default function DashboardPage() {
                         <YAxis allowDecimals={false} />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="value" name="Jumlah" />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

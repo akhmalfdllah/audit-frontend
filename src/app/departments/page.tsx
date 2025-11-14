@@ -83,7 +83,7 @@ export default function DepartmentsPage() {
     }
 
     async function handleDelete(id: string) {
-        const res = await fetch(`http://localhost:3000/${id}`, {
+        const res = await fetch(`https://skripsi-production-5a12.up.railway.app/${id}`, {
             method: "DELETE",
             credentials: "include",
         })

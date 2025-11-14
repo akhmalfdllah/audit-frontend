@@ -128,7 +128,7 @@ export default function UsersPage() {
             )
             : formData;
 
-        const url = editId ? `http://localhost:3000/user/${editId}` : "http://localhost:3000/user";
+        const url = editId ? `https://skripsi-production-5a12.up.railway.app/user/${editId}` : "https://skripsi-production-5a12.up.railway.app/user";
         const method = editId ? "PATCH" : "POST";
         const res = await fetch(url, {
             method,
@@ -139,7 +139,7 @@ export default function UsersPage() {
 
         if (res.ok) {
             if (editId) {
-                const updatedUserRes = await fetch(`http://localhost:3000/user/${editId}`, {
+                const updatedUserRes = await fetch(`https://skripsi-production-5a12.up.railway.app/user/${editId}`, {
                     credentials: "include",
                 });
                 const updatedUser = await updatedUserRes.json();
@@ -175,7 +175,7 @@ export default function UsersPage() {
     }
     async function confirmDeleteUser() {
         if (!confirmDelete.id) return;
-        const res = await fetch(`http://localhost:3000/user/${confirmDelete.id}`, {
+        const res = await fetch(`https://skripsi-production-5a12.up.railway.app/user/${confirmDelete.id}`, {
             method: "DELETE",
             credentials: "include",
         });

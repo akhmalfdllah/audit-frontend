@@ -22,7 +22,7 @@ export default function DepartmentsPage() {
     const [confirmDelete, setConfirmDelete] = useState<{ show: boolean, id: string | null }>({ show: false, id: null })
 
     useEffect(() => {
-        fetch("http://localhost:3000/all", {
+        fetch("https://skripsi-production-5a12.up.railway.app/all", {
             credentials: "include",
         })
             .then(res => res.json())
@@ -42,8 +42,8 @@ export default function DepartmentsPage() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         const url = editId
-            ? `http://localhost:3000/${editId}`
-            : `http://localhost:3000/groups`
+            ? `https://skripsi-production-5a12.up.railway.app/${editId}`
+            : `https://skripsi-production-5a12.up.railway.app/groups`
         const method = editId ? "PATCH" : "POST"
 
         const res = await fetch(url, {

@@ -1,24 +1,24 @@
 // src/middleware.ts
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+// import { NextResponse } from "next/server"
+// import type { NextRequest } from "next/server"
 
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get("access_token")?.value
+// export function middleware(request: NextRequest) {
+//   const token = request.cookies.get("access_token")?.value
 
-  // kalau ga ada token, redirect ke /login
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", request.url))
-  }
+//   // kalau ga ada token, redirect ke /login
+//   if (!token) {
+//     return NextResponse.redirect(new URL("/login", request.url))
+//   }
 
-  return NextResponse.next()
-}
+//   return NextResponse.next()
+// }
 
 export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/transaksi/:path*",
-    "/audit-log/:path*",
-    "/departments/:path*",
-    "/users/:path*",
-  ],
+  // matcher: [
+  //   "/dashboard/:path*",
+  //   "/transaksi/:path*",
+  //   "/audit-log/:path*",
+  //   "/departments/:path*",
+  //   "/users/:path*",
+  // ],
 }

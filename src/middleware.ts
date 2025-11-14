@@ -14,11 +14,11 @@
 // }
 
 export const config = {
-  // matcher: [
-  //   "/dashboard/:path*",
-  //   "/transaksi/:path*",
-  //   "/audit-log/:path*",
-  //   "/departments/:path*",
-  //   "/users/:path*",
-  // ],
+  matcher: [
+    // "/dashboard/:path*",
+    // "/transaksi/:path*",
+    // "/audit-log/:path*",
+    // "/departments/:path*",
+    // "/users/:path*",
+  ],
 }

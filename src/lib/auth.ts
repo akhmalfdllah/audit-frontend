@@ -1,29 +1,28 @@
-import axios from "@/lib/api";
-import { LoginInput } from "@/lib/validation";
+import api from "./api";
 
-export async function login(
-  data: LoginInput
-): Promise<{ ok: boolean; role?: "Admin" | "Auditor"; error?: string }> {
+export async function login(credentials: { email: string; password: string }) {
   try {
-    const res = await axios.post("/auth/signin", data, { withCredentials: true });
+    const res = await api.post("/auth/signin", credentials, {
+      withCredentials: true,
+    });
 
-    const role = res?.data?.role || res?.data?.user?.role || null;
+    return {
+      ok: true,
+      role: res.data.role,
+    };
+  } catch (err: any) {
+    return {
+      ok: false,
+      error: err.response?.data?.message || "Login gagal",
+    };
+  }
+}
 
-    if (role !== "Admin" && role !== "Auditor") {
-      console.warn("Role tidak ditemukan di response. Isi res.data:", res?.data);
-      return { ok: true }; // login tetap dianggap berhasil, role fallback
-    }
-
-    return { ok: true, role };
-  } catch (error: any) {
-    let msg = "Terjadi kesalahan, coba lagi";
-
-    const raw = error?.response?.data?.message;
-    if (typeof raw === "string") {
-      // biarkan backend yang menentukan pesan error
-      msg = raw;
-    }
-
-    return { ok: false, error: msg };
+export async function fetchMe() {
+  try {
+    const res = await api.get("/auth/me");
+    return { ok: true, user: res.data };
+  } catch {
+    return { ok: false };
   }
 }
